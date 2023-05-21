@@ -1,0 +1,105 @@
+---
+title: "GEOG 588 - Jack Colpitt"
+output: html_notebook
+---
+
+
+```{r}
+# load packages 
+library(skimr)
+library(tidyverse)
+library(here)
+library(janitor)
+library(skimr)
+
+```
+
+```{r}
+# load data
+# cc stands for Crook County, Oregon
+cc_geology <- read_csv(here("data", "mapUnits.csv"))
+# import relational table for the geology dataset
+rel_tbl <- read_csv(here("data", "MapUnits_Rel.csv"))
+
+beaches <- read_csv(here("data", "sydneybeaches.csv"))
+```
+```{r}
+glimpse(beaches)
+glimpse(cc_geology)
+glimpse(rel_tbl)
+```
+
+```{r}
+select_all(beaches, toupper)
+select_all(cc_geology, tolower)
+select_all(rel_tbl)
+```
+
+
+```{r}
+cleanbeaches <- clean_names(beaches)
+clean_geology <- clean_names(cc_geology)
+clean_relTbl <- clean_names(rel_tbl)
+```
+```{r}
+names(cleanbeaches)
+names(clean_geology)
+names(clean_relTbl)
+```
+```{r}
+#cleanbeaches <- rename(cleanbeaches, beachbugs = enterococci_cfu_100ml)
+clean_geology <- rename(clean_geology, map_unit_label = map_unit_l, map_unit_name = map_unit_n, g_rock_type = g_rock_typ)
+```
+
+
+```{r}
+select(cleanbeaches, council, site, beachbugs, everything())
+```
+
+
+```{r}
+# select subset of columns
+select(clean_geology, map_unit_name, age_name, formation, g_rock_type, lth_rk_typ, lith_gen_u)
+```
+
+```{r}
+# pipe %>%
+# reset dataframes to original settings
+cleanbeaches <- beaches %>%
+  clean_names() %>%
+  rename(beachbugs = enterococci_cfu_100ml) 
+  
+write_csv(cleanbeaches, "cleanbeaches.csv")
+```
+```{r}
+clean_geology <- select_all(cc_geology, tolower) %>%
+  clean_names() %>%
+  rename(map_unit_label = map_unit_l, map_unit_name = map_unit_n, g_rock_type = g_rock_typ, lith_gen = lith_gen_u, grain_size = cr_grn_siz, gn_lith_type = gn_lith_ty) 
+#%>%
+#  select(fid, map_unit_label, map_unit_name, age_name, formation, g_rock_type, lith_gen, lth_rk_typ, gn_lith_type)
+
+write_csv(clean_geology, "clean_geology.csv")
+```
+```{r}
+# which beach has the most extreme levels of bugs?
+
+worstbugs <- cleanbeaches %>% arrange(-beachbugs)
+
+worstcoogee <- cleanbeaches %>% 
+  filter(site == "Coogee Beach") %>%
+  arrange(-beachbugs)
+```
+```{r}
+# what lithology and ages are predominant in John Day Formation?
+# 
+johnDayGeo <- clean_geology %>%
+  #distinct(formation, map_unit_name, g_rock_type)
+  select(formation, map_unit_name, g_rock_type, lith_gen, gn_lith_type, age_name) %>%
+  filter(formation == "John Day Formation") %>%
+  arrange(age_name)
+
+select_all(johnDayGeo)
+```
+
+
+
