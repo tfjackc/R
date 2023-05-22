@@ -10,7 +10,7 @@ library(skimr)
 library(tidyverse)
 library(here)
 library(janitor)
-library(skimr)
+
 library(sf)
 ```
 
