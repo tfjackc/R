@@ -11,7 +11,7 @@ library(tidyverse)
 library(here)
 library(janitor)
 library(skimr)
-
+library(sf)
 ```
 
 ```{r}
@@ -22,6 +22,8 @@ cc_geology <- read_csv(here("data", "mapUnits.csv"))
 rel_tbl <- read_csv(here("data", "MapUnits_Rel.csv"))
 
 beaches <- read_csv(here("data", "sydneybeaches.csv"))
+
+hotsprings <- read_csv(here("data", "or_hotsprings.csv"))
 ```
 ```{r}
 glimpse(beaches)

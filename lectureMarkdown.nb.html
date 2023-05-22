@@ -1754,54 +1754,33 @@ display: none;
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkIHBhY2thZ2VzIFxubGlicmFyeShza2ltcilcbmxpYnJhcnkodGlkeXZlcnNlKVxubGlicmFyeShoZXJlKVxubGlicmFyeShqYW5pdG9yKVxubGlicmFyeShza2ltcilcblxuYGBgIn0= -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkIHBhY2thZ2VzIFxubGlicmFyeShza2ltcilcbmxpYnJhcnkodGlkeXZlcnNlKVxubGlicmFyeShoZXJlKVxubGlicmFyeShqYW5pdG9yKVxubGlicmFyeShza2ltcilcbmxpYnJhcnkoc2YpXG5gYGAifQ== -->
 <pre class="r"><code># load packages 
 library(skimr)
 library(tidyverse)
 library(here)
 library(janitor)
 library(skimr)
-</code></pre>
+library(sf)</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTGlua2luZyB0byBHRU9TIDMuMTEuMiwgR0RBTCAzLjYuMiwgUFJPSiA5LjIuMDsgc2ZfdXNlX3MyKCkgaXMgVFJVRVxuIn0= -->
+<pre><code>Linking to GEOS 3.11.2, GDAL 3.6.2, PROJ 9.2.0; sf_use_s2() is TRUE</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBsb2FkIGRhdGFcbiMgY2Mgc3RhbmRzIGZvciBDcm9vayBDb3VudHksIE9yZWdvblxuY2NfZ2VvbG9neSA8LSByZWFkX2NzdihoZXJlKFwiZGF0YVwiLCBcIm1hcFVuaXRzLmNzdlwiKSlcbmBgYCJ9 -->
-<pre class="r"><code># load data
-# cc stands for Crook County, Oregon
-cc_geology &lt;- read_csv(here(&quot;data&quot;, &quot;mapUnits.csv&quot;))</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaG90c3ByaW5ncyA8LSByZWFkX2NzdihoZXJlKFwiZGF0YVwiLCBcIm9yX2hvdHNwcmluZ3MuY3N2XCIpKVxuXG5gYGAifQ== -->
+<pre class="r"><code>hotsprings &lt;- read_csv(here(&quot;data&quot;, &quot;or_hotsprings.csv&quot;))
+</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMjI5OSBDb2x1bW5zOiAyNeKUgOKUgCBDb2x1bW4gc3BlY2lmaWNhdGlvbiDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIBcbkRlbGltaXRlcjogXCIsXCJcbmNociAoMTkpOiBSRUZfSURfQ09ELCBNQVBfVU5JVF9MLCBNQVBfVU5JVF9OLCBHX01SR19VX0wsIEdFT19HRU5MX1UsIEFHRV9OQU1FLCBURVJSQU5FX0dSLCBGT1JNQVRJT04sIE1FTUIuLi5cbmRibCAgKDYpOiBGSUQsIE1hcFVuaXRQSywgRGF0YVNvdXJjZSwgSURDb25mLCBTaGFwZV9MZW5nLCBTaGFwZV9BcmVhXG7ihLkgVXNlIGBzcGVjKClgIHRvIHJldHJpZXZlIHRoZSBmdWxsIGNvbHVtbiBzcGVjaWZpY2F0aW9uIGZvciB0aGlzIGRhdGEuXG7ihLkgU3BlY2lmeSB0aGUgY29sdW1uIHR5cGVzIG9yIHNldCBgc2hvd19jb2xfdHlwZXMgPSBGQUxTRWAgdG8gcXVpZXQgdGhpcyBtZXNzYWdlLlxuIn0= -->
-<pre><code>Rows: 2299 Columns: 25── Column specification ──────────────────────────────────────────────────────────────────────────────────────
+<!-- rnb-output-begin eyJkYXRhIjoiUm93czogNjkwIENvbHVtbnM6IDM14pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIixcIlxuY2hyICgyOCk6IEhvdFNwcmluZ1UsIE5hbWUsIExhYmVsLCBPdGhlcklkZW50LCBTb3VyY2UsIFNvdXJjZVVSSSwgRmVhdHVyZVR5cCwgT3RoZXJMb2NhdCwgLi4uXG5kYmwgICg3KTogRklELCBTZWN0aW9uLCBMYXREZWdyZWUsIExvbmdEZWdyZWUsIFRlbXBlcmF0dXIsIEZsb3csIENsYXNzaWZpY2FcbuKEuSBVc2UgYHNwZWMoKWAgdG8gcmV0cmlldmUgdGhlIGZ1bGwgY29sdW1uIHNwZWNpZmljYXRpb24gZm9yIHRoaXMgZGF0YS5cbuKEuSBTcGVjaWZ5IHRoZSBjb2x1bW4gdHlwZXMgb3Igc2V0IGBzaG93X2NvbF90eXBlcyA9IEZBTFNFYCB0byBxdWlldCB0aGlzIG1lc3NhZ2UuRXJyb3IgaW4gZHJvcCAmJiBsZW5ndGgoeG8pID09IDFMIDogaW52YWxpZCAneCcgdHlwZSBpbiAneCAmJiB5J1xuIn0= -->
+<pre><code>Rows: 690 Columns: 35── Column specification ──────────────────────────────────────────────────────────────────────
 Delimiter: &quot;,&quot;
-chr (19): REF_ID_COD, MAP_UNIT_L, MAP_UNIT_N, G_MRG_U_L, GEO_GENL_U, AGE_NAME, TERRANE_GR, FORMATION, MEMB...
-dbl  (6): FID, MapUnitPK, DataSource, IDConf, Shape_Leng, Shape_Area
+chr (28): HotSpringU, Name, Label, OtherIdent, Source, SourceURI, FeatureTyp, OtherLocat, ...
+dbl  (7): FID, Section, LatDegree, LongDegree, Temperatur, Flow, Classifica
 ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBpbXBvcnQgcmVsYXRpb25hbCB0YWJsZSBmb3IgdGhlIGdlb2xvZ3kgZGF0YXNldFxucmVsX3RibCA8LSByZWFkX2NzdihoZXJlKFwiZGF0YVwiLCBcIk1hcFVuaXRzX1JlbC5jc3ZcIikpXG5gYGAifQ== -->
-<pre class="r"><code># import relational table for the geology dataset
-rel_tbl &lt;- read_csv(here(&quot;data&quot;, &quot;MapUnits_Rel.csv&quot;))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogOTAxNyBDb2x1bW5zOiA44pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIixcIlxuY2hyICg1KTogUmVmZXJlbmNlSURjb2RlLCBNYXBVbml0TGFiZWwsIE1hcFVuaXROYW1lLCBBcmNKb2luS2V5LCBEZXNjcmlwdGlvblxuZGJsICgzKTogT0JKRUNUSUQsIE1hcFVuaXRQSywgRGF0YVNvdXJjZXNfSURcbuKEuSBVc2UgYHNwZWMoKWAgdG8gcmV0cmlldmUgdGhlIGZ1bGwgY29sdW1uIHNwZWNpZmljYXRpb24gZm9yIHRoaXMgZGF0YS5cbuKEuSBTcGVjaWZ5IHRoZSBjb2x1bW4gdHlwZXMgb3Igc2V0IGBzaG93X2NvbF90eXBlcyA9IEZBTFNFYCB0byBxdWlldCB0aGlzIG1lc3NhZ2UuXG4ifQ== -->
-<pre><code>Rows: 9017 Columns: 8── Column specification ──────────────────────────────────────────────────────────────────────────────────────
-Delimiter: &quot;,&quot;
-chr (5): ReferenceIDcode, MapUnitLabel, MapUnitName, ArcJoinKey, Description
-dbl (3): OBJECTID, MapUnitPK, DataSources_ID
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYmVhY2hlcyA8LSByZWFkX2NzdihoZXJlKFwiZGF0YVwiLCBcInN5ZG5leWJlYWNoZXMuY3N2XCIpKVxuYGBgIn0= -->
-<pre class="r"><code>beaches &lt;- read_csv(here(&quot;data&quot;, &quot;sydneybeaches.csv&quot;))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiUm93czogMzY5MCBDb2x1bW5zOiA44pSA4pSAIENvbHVtbiBzcGVjaWZpY2F0aW9uIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgFxuRGVsaW1pdGVyOiBcIixcIlxuY2hyICg0KTogUmVnaW9uLCBDb3VuY2lsLCBTaXRlLCBEYXRlXG5kYmwgKDQpOiBCZWFjaElkLCBMb25naXR1ZGUsIExhdGl0dWRlLCBFbnRlcm9jb2NjaSAoY2Z1LzEwMG1sKVxu4oS5IFVzZSBgc3BlYygpYCB0byByZXRyaWV2ZSB0aGUgZnVsbCBjb2x1bW4gc3BlY2lmaWNhdGlvbiBmb3IgdGhpcyBkYXRhLlxu4oS5IFNwZWNpZnkgdGhlIGNvbHVtbiB0eXBlcyBvciBzZXQgYHNob3dfY29sX3R5cGVzID0gRkFMU0VgIHRvIHF1aWV0IHRoaXMgbWVzc2FnZS5cbiJ9 -->
-<pre><code>Rows: 3690 Columns: 8── Column specification ──────────────────────────────────────────────────────────────────────────────────────
-Delimiter: &quot;,&quot;
-chr (4): Region, Council, Site, Date
-dbl (4): BeachId, Longitude, Latitude, Enterococci (cfu/100ml)
-ℹ Use `spec()` to retrieve the full column specification for this data.
-ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.Error in drop &amp;&amp; length(xo) == 1L : invalid &#39;x&#39; type in &#39;x &amp;&amp; y&#39;</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-chunk-begin -->
@@ -2029,7 +2008,7 @@ select_all(johnDayGeo)</code></pre>
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkdFT0cgNTg4IC0gSmFjayBDb2xwaXR0Ig0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KDQpgYGB7cn0NCiMgbG9hZCBwYWNrYWdlcyANCmxpYnJhcnkoc2tpbXIpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoaGVyZSkNCmxpYnJhcnkoamFuaXRvcikNCmxpYnJhcnkoc2tpbXIpDQoNCmBgYA0KDQpgYGB7cn0NCiMgbG9hZCBkYXRhDQojIGNjIHN0YW5kcyBmb3IgQ3Jvb2sgQ291bnR5LCBPcmVnb24NCmNjX2dlb2xvZ3kgPC0gcmVhZF9jc3YoaGVyZSgiZGF0YSIsICJtYXBVbml0cy5jc3YiKSkNCiMgaW1wb3J0IHJlbGF0aW9uYWwgdGFibGUgZm9yIHRoZSBnZW9sb2d5IGRhdGFzZXQNCnJlbF90YmwgPC0gcmVhZF9jc3YoaGVyZSgiZGF0YSIsICJNYXBVbml0c19SZWwuY3N2IikpDQoNCmJlYWNoZXMgPC0gcmVhZF9jc3YoaGVyZSgiZGF0YSIsICJzeWRuZXliZWFjaGVzLmNzdiIpKQ0KYGBgDQpgYGB7cn0NCmdsaW1wc2UoYmVhY2hlcykNCmdsaW1wc2UoY2NfZ2VvbG9neSkNCmdsaW1wc2UocmVsX3RibCkNCmBgYA0KDQpgYGB7cn0NCnNlbGVjdF9hbGwoYmVhY2hlcywgdG91cHBlcikNCnNlbGVjdF9hbGwoY2NfZ2VvbG9neSwgdG9sb3dlcikNCnNlbGVjdF9hbGwocmVsX3RibCkNCmBgYA0KDQoNCmBgYHtyfQ0KY2xlYW5iZWFjaGVzIDwtIGNsZWFuX25hbWVzKGJlYWNoZXMpDQpjbGVhbl9nZW9sb2d5IDwtIGNsZWFuX25hbWVzKGNjX2dlb2xvZ3kpDQpjbGVhbl9yZWxUYmwgPC0gY2xlYW5fbmFtZXMocmVsX3RibCkNCmBgYA0KYGBge3J9DQpuYW1lcyhjbGVhbmJlYWNoZXMpDQpuYW1lcyhjbGVhbl9nZW9sb2d5KQ0KbmFtZXMoY2xlYW5fcmVsVGJsKQ0KYGBgDQpgYGB7cn0NCiNjbGVhbmJlYWNoZXMgPC0gcmVuYW1lKGNsZWFuYmVhY2hlcywgYmVhY2hidWdzID0gZW50ZXJvY29jY2lfY2Z1XzEwMG1sKQ0KY2xlYW5fZ2VvbG9neSA8LSByZW5hbWUoY2xlYW5fZ2VvbG9neSwgbWFwX3VuaXRfbGFiZWwgPSBtYXBfdW5pdF9sLCBtYXBfdW5pdF9uYW1lID0gbWFwX3VuaXRfbiwgZ19yb2NrX3R5cGUgPSBnX3JvY2tfdHlwKQ0KYGBgDQoNCg0KYGBge3J9DQpzZWxlY3QoY2xlYW5iZWFjaGVzLCBjb3VuY2lsLCBzaXRlLCBiZWFjaGJ1Z3MsIGV2ZXJ5dGhpbmcoKSkNCmBgYA0KDQoNCmBgYHtyfQ0KIyBzZWxlY3Qgc3Vic2V0IG9mIGNvbHVtbnMNCnNlbGVjdChjbGVhbl9nZW9sb2d5LCBtYXBfdW5pdF9uYW1lLCBhZ2VfbmFtZSwgZm9ybWF0aW9uLCBnX3JvY2tfdHlwZSwgbHRoX3JrX3R5cCwgbGl0aF9nZW5fdSkNCmBgYA0KDQpgYGB7cn0NCiMgcGlwZSAlPiUNCiMgcmVzZXQgZGF0YWZyYW1lcyB0byBvcmlnaW5hbCBzZXR0aW5ncw0KY2xlYW5iZWFjaGVzIDwtIGJlYWNoZXMgJT4lDQogIGNsZWFuX25hbWVzKCkgJT4lDQogIHJlbmFtZShiZWFjaGJ1Z3MgPSBlbnRlcm9jb2NjaV9jZnVfMTAwbWwpIA0KICANCndyaXRlX2NzdihjbGVhbmJlYWNoZXMsICJjbGVhbmJlYWNoZXMuY3N2IikNCmBgYA0KYGBge3J9DQpjbGVhbl9nZW9sb2d5IDwtIHNlbGVjdF9hbGwoY2NfZ2VvbG9neSwgdG9sb3dlcikgJT4lDQogIGNsZWFuX25hbWVzKCkgJT4lDQogIHJlbmFtZShtYXBfdW5pdF9sYWJlbCA9IG1hcF91bml0X2wsIG1hcF91bml0X25hbWUgPSBtYXBfdW5pdF9uLCBnX3JvY2tfdHlwZSA9IGdfcm9ja190eXAsIGxpdGhfZ2VuID0gbGl0aF9nZW5fdSwgZ3JhaW5fc2l6ZSA9IGNyX2dybl9zaXosIGduX2xpdGhfdHlwZSA9IGduX2xpdGhfdHkpIA0KIyU+JQ0KIyAgc2VsZWN0KGZpZCwgbWFwX3VuaXRfbGFiZWwsIG1hcF91bml0X25hbWUsIGFnZV9uYW1lLCBmb3JtYXRpb24sIGdfcm9ja190eXBlLCBsaXRoX2dlbiwgbHRoX3JrX3R5cCwgZ25fbGl0aF90eXBlKQ0KDQp3cml0ZV9jc3YoY2xlYW5fZ2VvbG9neSwgImNsZWFuX2dlb2xvZ3kuY3N2IikNCmBgYA0KYGBge3J9DQojIHdoaWNoIGJlYWNoIGhhcyB0aGUgbW9zdCBleHRyZW1lIGxldmVscyBvZiBidWdzPw0KDQp3b3JzdGJ1Z3MgPC0gY2xlYW5iZWFjaGVzICU+JSBhcnJhbmdlKC1iZWFjaGJ1Z3MpDQoNCndvcnN0Y29vZ2VlIDwtIGNsZWFuYmVhY2hlcyAlPiUgDQogIGZpbHRlcihzaXRlID09ICJDb29nZWUgQmVhY2giKSAlPiUNCiAgYXJyYW5nZSgtYmVhY2hidWdzKQ0KYGBgDQpgYGB7cn0NCiMgd2hhdCBsaXRob2xvZ3kgYW5kIGFnZXMgYXJlIHByZWRvbWluYW50IGluIEpvaG4gRGF5IEZvcm1hdGlvbj8NCiMgDQpqb2huRGF5R2VvIDwtIGNsZWFuX2dlb2xvZ3kgJT4lDQogICNkaXN0aW5jdChmb3JtYXRpb24sIG1hcF91bml0X25hbWUsIGdfcm9ja190eXBlKQ0KICBzZWxlY3QoZm9ybWF0aW9uLCBtYXBfdW5pdF9uYW1lLCBnX3JvY2tfdHlwZSwgbGl0aF9nZW4sIGduX2xpdGhfdHlwZSwgYWdlX25hbWUpICU+JQ0KICBmaWx0ZXIoZm9ybWF0aW9uID09ICJKb2huIERheSBGb3JtYXRpb24iKSAlPiUNCiAgYXJyYW5nZShhZ2VfbmFtZSkNCg0Kc2VsZWN0X2FsbChqb2huRGF5R2VvKQ0KYGBgDQoNCg0KDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkdFT0cgNTg4IC0gSmFjayBDb2xwaXR0Ig0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KDQpgYGB7cn0NCiMgbG9hZCBwYWNrYWdlcyANCmxpYnJhcnkoc2tpbXIpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkoaGVyZSkNCmxpYnJhcnkoamFuaXRvcikNCmxpYnJhcnkoc2tpbXIpDQpsaWJyYXJ5KHNmKQ0KYGBgDQoNCmBgYHtyfQ0KIyBsb2FkIGRhdGENCiMgY2Mgc3RhbmRzIGZvciBDcm9vayBDb3VudHksIE9yZWdvbg0KY2NfZ2VvbG9neSA8LSByZWFkX2NzdihoZXJlKCJkYXRhIiwgIm1hcFVuaXRzLmNzdiIpKQ0KIyBpbXBvcnQgcmVsYXRpb25hbCB0YWJsZSBmb3IgdGhlIGdlb2xvZ3kgZGF0YXNldA0KcmVsX3RibCA8LSByZWFkX2NzdihoZXJlKCJkYXRhIiwgIk1hcFVuaXRzX1JlbC5jc3YiKSkNCg0KYmVhY2hlcyA8LSByZWFkX2NzdihoZXJlKCJkYXRhIiwgInN5ZG5leWJlYWNoZXMuY3N2IikpDQoNCmhvdHNwcmluZ3MgPC0gcmVhZF9jc3YoaGVyZSgiZGF0YSIsICJvcl9ob3RzcHJpbmdzLmNzdiIpKQ0KYGBgDQpgYGB7cn0NCmdsaW1wc2UoYmVhY2hlcykNCmdsaW1wc2UoY2NfZ2VvbG9neSkNCmdsaW1wc2UocmVsX3RibCkNCmBgYA0KDQpgYGB7cn0NCnNlbGVjdF9hbGwoYmVhY2hlcywgdG91cHBlcikNCnNlbGVjdF9hbGwoY2NfZ2VvbG9neSwgdG9sb3dlcikNCnNlbGVjdF9hbGwocmVsX3RibCkNCmBgYA0KDQoNCmBgYHtyfQ0KY2xlYW5iZWFjaGVzIDwtIGNsZWFuX25hbWVzKGJlYWNoZXMpDQpjbGVhbl9nZW9sb2d5IDwtIGNsZWFuX25hbWVzKGNjX2dlb2xvZ3kpDQpjbGVhbl9yZWxUYmwgPC0gY2xlYW5fbmFtZXMocmVsX3RibCkNCmBgYA0KYGBge3J9DQpuYW1lcyhjbGVhbmJlYWNoZXMpDQpuYW1lcyhjbGVhbl9nZW9sb2d5KQ0KbmFtZXMoY2xlYW5fcmVsVGJsKQ0KYGBgDQpgYGB7cn0NCiNjbGVhbmJlYWNoZXMgPC0gcmVuYW1lKGNsZWFuYmVhY2hlcywgYmVhY2hidWdzID0gZW50ZXJvY29jY2lfY2Z1XzEwMG1sKQ0KY2xlYW5fZ2VvbG9neSA8LSByZW5hbWUoY2xlYW5fZ2VvbG9neSwgbWFwX3VuaXRfbGFiZWwgPSBtYXBfdW5pdF9sLCBtYXBfdW5pdF9uYW1lID0gbWFwX3VuaXRfbiwgZ19yb2NrX3R5cGUgPSBnX3JvY2tfdHlwKQ0KYGBgDQoNCg0KYGBge3J9DQpzZWxlY3QoY2xlYW5iZWFjaGVzLCBjb3VuY2lsLCBzaXRlLCBiZWFjaGJ1Z3MsIGV2ZXJ5dGhpbmcoKSkNCmBgYA0KDQoNCmBgYHtyfQ0KIyBzZWxlY3Qgc3Vic2V0IG9mIGNvbHVtbnMNCnNlbGVjdChjbGVhbl9nZW9sb2d5LCBtYXBfdW5pdF9uYW1lLCBhZ2VfbmFtZSwgZm9ybWF0aW9uLCBnX3JvY2tfdHlwZSwgbHRoX3JrX3R5cCwgbGl0aF9nZW5fdSkNCmBgYA0KDQpgYGB7cn0NCiMgcGlwZSAlPiUNCiMgcmVzZXQgZGF0YWZyYW1lcyB0byBvcmlnaW5hbCBzZXR0aW5ncw0KY2xlYW5iZWFjaGVzIDwtIGJlYWNoZXMgJT4lDQogIGNsZWFuX25hbWVzKCkgJT4lDQogIHJlbmFtZShiZWFjaGJ1Z3MgPSBlbnRlcm9jb2NjaV9jZnVfMTAwbWwpIA0KICANCndyaXRlX2NzdihjbGVhbmJlYWNoZXMsICJjbGVhbmJlYWNoZXMuY3N2IikNCmBgYA0KYGBge3J9DQpjbGVhbl9nZW9sb2d5IDwtIHNlbGVjdF9hbGwoY2NfZ2VvbG9neSwgdG9sb3dlcikgJT4lDQogIGNsZWFuX25hbWVzKCkgJT4lDQogIHJlbmFtZShtYXBfdW5pdF9sYWJlbCA9IG1hcF91bml0X2wsIG1hcF91bml0X25hbWUgPSBtYXBfdW5pdF9uLCBnX3JvY2tfdHlwZSA9IGdfcm9ja190eXAsIGxpdGhfZ2VuID0gbGl0aF9nZW5fdSwgZ3JhaW5fc2l6ZSA9IGNyX2dybl9zaXosIGduX2xpdGhfdHlwZSA9IGduX2xpdGhfdHkpIA0KIyU+JQ0KIyAgc2VsZWN0KGZpZCwgbWFwX3VuaXRfbGFiZWwsIG1hcF91bml0X25hbWUsIGFnZV9uYW1lLCBmb3JtYXRpb24sIGdfcm9ja190eXBlLCBsaXRoX2dlbiwgbHRoX3JrX3R5cCwgZ25fbGl0aF90eXBlKQ0KDQp3cml0ZV9jc3YoY2xlYW5fZ2VvbG9neSwgImNsZWFuX2dlb2xvZ3kuY3N2IikNCmBgYA0KYGBge3J9DQojIHdoaWNoIGJlYWNoIGhhcyB0aGUgbW9zdCBleHRyZW1lIGxldmVscyBvZiBidWdzPw0KDQp3b3JzdGJ1Z3MgPC0gY2xlYW5iZWFjaGVzICU+JSBhcnJhbmdlKC1iZWFjaGJ1Z3MpDQoNCndvcnN0Y29vZ2VlIDwtIGNsZWFuYmVhY2hlcyAlPiUgDQogIGZpbHRlcihzaXRlID09ICJDb29nZWUgQmVhY2giKSAlPiUNCiAgYXJyYW5nZSgtYmVhY2hidWdzKQ0KYGBgDQpgYGB7cn0NCiMgd2hhdCBsaXRob2xvZ3kgYW5kIGFnZXMgYXJlIHByZWRvbWluYW50IGluIEpvaG4gRGF5IEZvcm1hdGlvbj8NCiMgDQpqb2huRGF5R2VvIDwtIGNsZWFuX2dlb2xvZ3kgJT4lDQogICNkaXN0aW5jdChmb3JtYXRpb24sIG1hcF91bml0X25hbWUsIGdfcm9ja190eXBlKQ0KICBzZWxlY3QoZm9ybWF0aW9uLCBtYXBfdW5pdF9uYW1lLCBnX3JvY2tfdHlwZSwgbGl0aF9nZW4sIGduX2xpdGhfdHlwZSwgYWdlX25hbWUpICU+JQ0KICBmaWx0ZXIoZm9ybWF0aW9uID09ICJKb2huIERheSBGb3JtYXRpb24iKSAlPiUNCiAgYXJyYW5nZShhZ2VfbmFtZSkNCg0Kc2VsZWN0X2FsbChqb2huRGF5R2VvKQ0KYGBgDQoNCg0KDQo=</div>
 
 
 
