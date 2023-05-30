@@ -1,0 +1,69 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r setup, include =FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(rgl)
+library(DT)
+library(plotly)
+library(data.table)
+library(janitor)
+library(ggbeeswarm)
+```
+```{r}
+quakes <- read_csv(here("data", "2.5_month.csv"))
+world <- map_data("world")
+select_all(quakes)
+```
+
+```{r}
+ggplot(
+  data = quakes, 
+  mapping = aes
+  (
+  x = depth,
+  y = mag, 
+  colour = locationSource,    
+  size = mag
+  )) +
+  geom_jitter()
+```
+```{r}
+
+ggplot() + geom_polygon(data = world, aes(x =  long,  y= lat, group = group)) + 
+  geom_point(data = quakes, 
+             aes(x = longitude, y = latitude, colour = depth, size = mag )) +
+  stat_density2d(show.legend = FALSE) + xlab("Longitude") +ylab("Latitude") + ggtitle("Magnitude Type")+ coord_quickmap()
+```
+```{r}
+earthq <- read_csv(here("data", "database.csv")) %>%
+  clean_names() 
+  #filter()
+
+select_all(earthq)
+datatable(earthq)
+write_csv(earthq, "earthquakes.csv")
+```
+```{r}
+ggplot() + geom_polygon(data = world, aes(x =  long,  y= lat, group = group)) + 
+  geom_point(data = earthq, 
+             aes(x = longitude, y = latitude, colour = depth, size = magnitude )) +
+  stat_density2d(show.legend = FALSE) + xlab("Longitude") +ylab("Latitude") + ggtitle("Magnitude Type")+ coord_quickmap()
+```
+```{r}
+quakes <- read_csv(here("data", "earthquakes.csv"))
+```
+
+
+
+```{r}
+# plot earthquake magnitudes
+
+quakes %>%
+  ggplot(aes(x = ))
+```

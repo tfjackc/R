@@ -1,0 +1,17 @@
+name,county,temp,temp_unit,measure_type,confidence,count
+Borax Lake Hot Spring - B0520,Harney,105.8,Farenheit,spot measurement,correctness date is time of publication by default,420
+Wall Creek Warm Spring,Lane,105.8,Farenheit,spot measurement,correctness date is time of publication by default,15
+Upper Lake Owyhee Hot Springs 1,Malheur,105.8,Farenheit,spot measurement,correctness date is time of publication by default,48
+Joaquin Miller Hot Springs 1,Grant,104,Farenheit,spot measurement,correctness date is time of publication by default,16
+Harney Lake Hot Springs (1 of 5),Harney,104,Farenheit,spot measurement,correctness date is time of publication by default,420
+Borax Lake Hot Spring - B0120-v1,Harney,104,Farenheit,spot measurement,correctness date is time of publication by default,420
+Antelope Hot Springs (1 of 4),Lake,104,Farenheit,spot measurement,correctness date is time of publication by default,50
+Antelope Spring,Lake,104,Farenheit,spot measurement,correctness date is time of publication by default,50
+Borax Lake Hot Spring - B1640,Harney,100.4,Farenheit,spot measurement,correctness date is time of publication by default,420
+Twin Hot Springs (1 of 7),Harney,100.4,Farenheit,spot measurement,correctness date is time of publication by default,420
+Hidaway Springs,Umatilla,100.4,Farenheit,spot measurement,correctness date is time of publication by default,3
+Sweet Water Warm Springs,Union,100.4,Farenheit,spot measurement,correctness date is time of publication by default,28
+Fisher Hot Springs,Baker,98.6,Farenheit,spot measurement,correctness date is time of publication by default,9
+Borax Lake Hot Spring - B0740-v1,Harney,98.6,Farenheit,spot measurement,correctness date is time of publication by default,420
+Bully Creek Spring,Malheur,98.6,Farenheit,spot measurement,correctness date is time of publication by default,48
+Union Junction Warm Spring 1,Union,98.6,Farenheit,spot measurement,correctness date is time of publication by default,28
