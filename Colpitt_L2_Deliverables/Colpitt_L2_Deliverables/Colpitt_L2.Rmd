@@ -1,0 +1,119 @@
+---
+title: "GEOG 588 - Jack Colpitt"
+output: html_notebook
+---
+### This walk through will cover some of the Basic R commands for data wrangling and analysis with the janitor, dplyr, and the tidyverse package.
+
+**Step 1** - Load Packages.
+```{css, echo=FALSE}
+p {
+  margin-bottom: 0;
+}
+```
+```{r}
+# Load packages
+library(skimr)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+**Step 2** - Load Data. We will be working with Sydney Beaches data from the RYouWithMe GitHub repository https://github.com/rladiessydney/RYouWithMe, and Oregon Hotsprings https://www.oregongeology.org/gtilo/download_data.htm. 
+The csv used in the walkthrough can also be found in my personal Github R repository https://github.com/tfjackc/R/tree/main/data.
+```{r}
+# Import Sydney Beaches CSV
+beaches <- read_csv(here("data", "sydneybeaches.csv"))
+# Import Oregon Hot Springs CSV
+or_hotsprings <- read_csv(here("data", "or_hotsprings.csv"))
+```
+**Step 3** - Lets get a view of the data in a default table, but I would like to make the columns all lower case for consistency. After scanning the data I'll decide from here what names need changing, what columns are suited for answering questions, and what format I would like to go with (all lower? upper? camelCase?).
+```{r}
+# Select all columns and rows with column names in lower case
+select_all(beaches, tolower)
+```
+
+```{r}
+# Select all columns and rows with column names in lower case
+select_all(or_hotsprings, tolower)
+```
+**Step 4** - Now lets clean up the names using the janitor package.
+```{r}
+# Use clean_names function
+cleanbeaches <- clean_names(beaches)
+cleansprings <- clean_names(or_hotsprings)
+# View the resulting data
+select_all(cleanbeaches)
+# View the resulting data
+select_all(cleansprings)
+```
+**Step 5** - Now that we have a better understanding of the data, we can offically change our columns names using the rename function.
+```{r}
+# Change enterococci_cfu_100ml to beachbugs
+cleanbeaches <- rename(cleanbeaches, beachbugs = enterococci_cfu_100ml)
+cleansprings <- rename(cleansprings, hot_spring = hot_spring_u, spring_type = feature_typ, alt_location = other_locat, lat = lat_degree, lon = long_degree, temp = temperatur, temp_unit = temperat_1, measure_type = temp_measur, confidence = temp_meas_1)
+```
+**Step 6** - Print out the current names after adjustments.
+```{r}
+# Cleanbeaches names
+names(cleanbeaches)
+# Cleansprings names
+names(cleansprings)
+```
+**Step 7** - Using the select and arrange function we can determine which day, and where were the worst beach bugs according to our data set. 
+```{r}
+# Use the pipe to make a selection and then arrange in beachbugs in descending order
+worstbugs <- cleanbeaches %>%
+  select(beach_id, council, site, date, beachbugs) %>%
+  arrange(-beachbugs)
+
+# Preview the table with select all
+select_all(worstbugs)
+```
+**Step 8** - Now that we know where the worst event took place, lets have a look at a particular beach we are interested in. Using the filter function we can see the observations taken for just Coogee Beach. 
+```{r}
+# Pipe the filter and arrange function into a new variable.
+worstcoogee <- worstbugs %>% 
+  filter(site == "Coogee Beach") %>%
+  arrange(-beachbugs)
+  
+# Write observations to a new CSV.
+write_csv(worstcoogee, "worstcoogee.csv")
+```
+**Step 9** - Lets work back through some of those steps with Oregon hot springs to determine which county has the most, and which ones are the best temperature for recreating. Start by selecting a subset of data in the cleansprings dataframe.
+```{r}
+# Select subset of hot spring data
+cleansprings <- cleansprings %>% 
+  select(name, county, temp, temp_unit, measure_type, confidence)
+```
+**Step 10** - Create column counting the number of observations for each county.
+```{r}
+# Find out which Oregon counties have the highest number of hot springs
+counties <- cleansprings %>%
+  count(county, sort=TRUE)
+  rename(counties, count = n)
+```
+**Step 11** - Find the temperature range between 98 and 106 degrees Fahrenheit. 
+```{r}
+# Find out which hot springs have the best temperature range for leisure
+best_temp <- cleansprings %>%
+  filter(temp > 98 & temp < 106) %>%
+  arrange(-temp)
+```
+**Step 12** - Use a left join based on the county value to get results in one place for export.
+```{r}
+# Join county county and temperature data back into one frame for export
+dfjoin <- left_join(best_temp, counties, by="county") %>%
+  rename(count = n)
+  select_all(dfjoin)
+```
+**Step 13** - Export data to CSV.
+```{r}
+# Write results to a csv
+write_csv(dfjoin, "oregon_hotsprings.csv")
+```
+
+
+
+
+
+
