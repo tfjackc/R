@@ -1,0 +1,55 @@
+---
+title: "USGS - Earthquakes"
+output: html_notebook
+---
+### We are working with a data set from the USGS that encompasses earthquake activity starting in 1965 until 2016. 
+
+**Step 1** - Load Packages.
+```{r}
+# import libraries
+library(here)
+library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
+library(rgl)
+library(DT)
+library(plotly)
+library(data.table)
+library(janitor)
+library(ggbeeswarm)
+```
+
+#### Lets begin the analysis by creating a time series to understand at what point in the time line has experienced the most significant amount of earthquakes.
+
+**Step 2** - Read CSV into a dataframe & parse out the year value from the date column.
+```{r}
+
+earthquakes <- read_csv(here("data", "earthquakes.csv"))
+
+earthquakes %>%
+  clean_names()
+  mutate(D=date = as.Date(date, format = "%m/%d/%Y"),
+         year = year(date))
+
+# Check the results
+head(earthquakes)
+
+
+```
+```{r}
+earthquakes %>%
+  mutate(Date = as.Date(Date, format = "%m/%d/%Y")) %>%
+  mutate(Year = year(Date))
+
+# Check the results
+head(earthquakes)
+```
+```{r}
+earthquakes %>%
+  ggplot(aes(x = date, y = magnitude)) + 
+  geom_point()
+
+earthquakes %>%
+  group_by(year) %>%
+  summarise(obs = n())
+```
