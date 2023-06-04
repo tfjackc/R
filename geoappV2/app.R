@@ -6,7 +6,6 @@ library(here)
 library(sp)
 library(sf)
 library(rgdal)
-library(RColorBrewer)
 
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
@@ -36,7 +35,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   output$eqMap <- renderLeaflet({
-    filteredEqsf <- eqsf
+    filteredEqsf <- eqsf 
     
     if (input$dropdown != "all") {
       filteredEqsf <- filteredEqsf %>%
@@ -49,18 +48,19 @@ server <- function(input, output, session) {
     pal <- colorBin(
       palette = "Spectral",
       domain = filteredEqsf$mag,
-      bins = 5,
-      direction = -1
+      reverse = TRUE,
+      bins = 5
     )
     
     leaflet(filteredEqsf) %>%
       addTiles() %>%
       setView(-117.841293, 46.195042, 3) %>%
       addCircleMarkers(
-        color = ~pal(mag),
+        fillColor = ~pal(mag),
         radius = ~filteredEqsf$mag * 2,
         stroke = FALSE,
-        fillOpacity = 0.7,
+        color = "black",
+        fillOpacity = 0.6,
         popup = paste0(
           "<strong>Title:</strong> ", filteredEqsf$title,
           "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
