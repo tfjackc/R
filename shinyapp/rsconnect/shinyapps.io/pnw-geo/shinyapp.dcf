@@ -1,0 +1,11 @@
+name: shinyapp
+title: shinyapp
+username:
+account: pnw-geo
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9233244
+bundleId: 7295239
+url: https://pnw-geo.shinyapps.io/shinyapp/
+when: 1685682065.4738
+lastSyncTime: 1685682065.47382

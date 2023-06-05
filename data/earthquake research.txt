@@ -1,0 +1,48 @@
+earthquake research --
+
+geocomputional methods 
+
+"spatial distribution
+analysis, kernel density estimation, and spatial autocorrelation using local
+Moran statistics (Moran, 1950), local indicators of spatial association (LISA)
+(Anselin, 1995), and Getis-Ord (Gi Statistic) (Getis & Ord, 1992). All of these
+methods were processed within the RStudio environment.
+
+Using spatial distribution analysis, we plot the earthquake events for the last
+120 years in Indonesia based on magnitude and depth. 
+
+Spatial autocorrelation
+measures the degree to which earthquake events are similar to nearby
+earthquake events. 
+
+Positive spatial autocorrelation is determined when similar
+values tend to be closer together than dissimilar values. 
+
+In the case of earthquake
+data, earthquakes with similar characteristics tend to reside in similar
+neighbourhoods due to various reasons, including depth, magnitude, or tsunami
+events generated from the earthquake. 
+
+In this study, we evaluate the spatial
+autocorrelation of variable depth and magnitude to tsunami events.
+Several packages need to be installed and activated when using geostatistical
+methods within RStudio. For instance, we need to install and activate the
+"raster" and "adehabitatHR" for kernel density estimation. Furthermore, we
+need to install and activate the "deldir" and "spdep" packages for spatial
+autocorrelation analysis."
+
+
+Ramdani, F.; Chairunnisa, V. Combination of Geostatistical and Geovisualisation Techniques for Analysing 120 Year Earthquake Events in Indonesia Using Open-Source Software. Preprints.org 2021, 2021030407. https://doi.org/10.20944/preprints202103.0407.v1 Ramdani, F.; Chairunnisa, V. Combination of Geostatistical and Geovisualisation Techniques for Analysing 120 Year Earthquake Events in Indonesia Using Open-Source Software. Preprints.org 2021, 2021030407. https://doi.org/10.20944/preprints202103.0407.v1 
+
+
+questions to ask about r apps and earthquake data, what are we trying to solve?
+
+Visualizing seismic data: R Shiny apps can be used to visualize seismic data in a variety of ways, including maps, graphs, and charts. This can help researchers to identify patterns and trends in the data, and to communicate their findings to others.
+Analyzing seismic data: R Shiny apps can be used to analyze seismic data using a variety of statistical methods. This can help researchers to identify the causes of earthquakes, to predict the likelihood of future earthquakes, and to develop mitigation strategies.
+
+
+
+- The first step is to identify the variables (attributes) to use and the temporal and spatial extent of the data to be used.
+- Like in data visualization, choose one or two stories to explore with the data. More tools or data can be added later in future projects. But for the scope of this project, keep it simple.
+- Your project should follow the same format as other Option 2 projects. This means that you should follow the Term Project guidelines suggested in the Canvas content when writing the proposal for next week.
+- In the proposal, be sure to phrase the research questions a question. This will help define the scope and the goals of the study better. Which particular problem would address the web application? Which gap? How is that information currently displayed or consumed, and what benefits the web app will bring?
