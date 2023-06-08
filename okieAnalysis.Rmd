@@ -1,0 +1,293 @@
+---
+title: "Oklahoma Tornadoes"
+output: html_notebook
+---
+
+```{r}
+library(sf)           
+library(rgdal)        
+library(ggplot2)      
+library(dplyr)        
+library(tidyr)        
+library(scales)       
+library(RColorBrewer) 
+library(units)
+library(cowplot)
+library(here)
+```
+```{r}
+okcounty <- st_read(here("data", "ok_counties.shp"), quiet = TRUE)
+tpoint <- st_read(here("data", "ok_tornado_point.shp"), quiet = TRUE)
+tpath <- st_read(here("data", "ok_tornado_path.shp"), quiet = TRUE)
+
+class(okcounty)
+glimpse(okcounty)
+```
+```{r}
+okcounty_sp <- as(okcounty, 'Spatial')
+class(okcounty_sp)
+```
+```{r}
+okcounty_sf <- st_as_sf(okcounty_sp)
+class(okcounty_sf)
+```
+```{r}
+ggplot(data = okcounty) +
+  geom_sf(fill = NA)
+```
+```{r}
+names(tpoint)
+```
+```{r}
+tpoint_16_21 <- tpoint %>%
+  filter(yr >= 2016 & yr <= 2021) %>%
+  select(om, yr, date)
+
+tpath_16_21 <- tpath %>%
+  filter(yr >= 2016 & yr <= 2021) %>%
+  select(om, yr, date)
+```
+```{r}
+ggplot() +
+  geom_sf(data = okcounty, fill = NA) +
+  geom_sf(data = tpoint_16_21) +
+  theme_bw()
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = okcounty, fill = NA) +
+  geom_sf(data = tpath_16_21, color = "red") +
+  theme_void()
+```
+```{r}
+ggplot() +
+  geom_sf(data = tpoint_16_21,
+          aes(color = as.factor(yr))) +
+  geom_sf(data = okcounty, fill = NA) +
+  scale_color_discrete(name = "Year") +
+  coord_sf(datum = NA) +
+  theme_void()
+```
+```{r}
+ggplot() +
+  geom_sf(data = okcounty, 
+          fill = NA,
+          color = "gray") +
+  geom_sf(data = tpoint_16_21,size = 0.75) +
+  facet_wrap(vars(yr), ncol = 2) +
+  coord_sf(datum = NA) +
+  theme_void()
+```
+```{r}
+countypnt <- st_join(tpoint_16_21, okcounty)
+glimpse(countypnt)
+
+# convert to a non spatial dataframe
+countypnt <- st_drop_geometry(countypnt)
+countysum <- countypnt %>%
+  group_by(GEOID) %>%
+  summarize(tcnt = n())
+glimpse(countysum)
+```
+```{r}
+countymap <- okcounty %>%
+  left_join(countysum, by = "GEOID") %>%
+  replace(is.na(.), 0) %>%
+  mutate(area = st_area(okcounty),
+         tdens = 10^6 * 10^3 * tcnt / area) %>%
+  drop_units()
+glimpse(countymap)
+```
+```{r}
+st_write(countymap, dsn = "oktornado.gpkg",
+         layer = "countysum",
+         delete_dsn = TRUE)
+```
+```{r}
+st_write(countymap, dsn = "oktornado.geojson",
+         layeroptions = "RFC7946 = YES")
+```
+```{r}
+# proud to say the highest tornado density is my home town, Tulsa County
+ggplot(data = countymap) +
+  geom_sf(aes(fill = tdens)) +
+  theme_void()
+```
+```{r}
+st_geometry_type(okcounty, by_geometry = FALSE)
+
+okcntrd = st_centroid(countymap)
+st_geometry_type(okcntrd, by_geometry = FALSE)
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = okcntrd, aes(size = tcnt)) +
+  geom_sf(data = okcounty, fill = NA) +
+  theme_void()
+```
+```{r}
+ggplot(data = countymap) +
+  geom_sf(aes(fill = tdens)) +
+  scale_fill_distiller(name = expression("Tornadoes/1000 km"^2),
+                       palette = "YlOrRd",
+                       breaks = pretty_breaks(),
+                       direction = 1) +
+  theme_void() +
+  theme(legend.position = "bottom")
+
+```
+```{r}
+numclas <- 4
+qbrks <- seq(0, 1, length.out = numclas + 1)
+qbrks
+
+countymap <- countymap %>%
+  mutate(tdens_c1 = cut(tdens,
+                        breaks = quantile(tdens, breaks = qbrks),
+                        include.lowest = T))
+
+
+ggplot(data = countymap) +
+  geom_sf(aes(fill = tdens_c1)) +
+  scale_fill_brewer(name = expression("Tornadoes/1000 km"^2),
+                    palette = "YlOrRd") +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+```{r}
+maxcnt <- max(okcntrd$tcnt)
+brkpts <- c(0, 2, 5, 10, maxcnt)
+okcntrd <- okcntrd %>%
+  mutate(tcnt_c1 = cut(tcnt,
+                       breaks = brkpts,
+                       include.lowest = T))
+
+ggplot(data = okcntrd) +
+  geom_sf(aes(size = tcnt_c1)) +
+  scale_size_discrete(name="Tornadoes") +
+  geom_sf(data = okcounty, fill = NA) +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
+```{r}
+ggsave("tornado.png", 
+       width = 6, 
+       height = 4, 
+       dpi = 300)
+ggsave("tornado2.png", 
+       width = 15, 
+       height = 10, 
+       units = "cm", 
+       dpi = 100)
+```
+```{r}
+choropleth <- ggplot(data = countymap) +
+  geom_sf(aes(fill = tdens_c1)) +
+  scale_fill_brewer(name="Density",   
+                    palette = "YlOrRd") +
+  theme_void()
+
+gradsymbol <- ggplot(data = okcntrd) +
+  geom_sf(aes(size = tcnt_c1)) +
+  scale_size_discrete(name="Count") +
+  geom_sf(data = okcounty, fill = NA) +
+  theme_void()
+
+ggsave("choropleth.tiff", 
+       plot = choropleth,
+       width = 6, 
+       height = 4, 
+       dpi = 300, 
+       compression = "lzw")
+
+ggsave("gradsymbol.tiff",
+       plot = gradsymbol,
+       width = 6, 
+       height = 4, 
+       dpi = 300, 
+       compression = "lzw")
+```
+```{r}
+plot_grid(choropleth, gradsymbol, 
+          labels = c("A) Choropleth Map", 
+                     "B) Graduated Symbol Map",
+                     label_size = 12),
+          ncol = 1, 
+          hjust = 0, 
+          label_x = 0, 
+          align = "hv")
+```
+
+```{r}
+tpath_years <- ggplot() +
+                  geom_sf(data = tpath_16_21,
+                          aes(color = as.factor(yr))) +
+                  geom_sf(data = okcounty, fill = NA) +
+                  scale_color_discrete(name = "Year") +
+                  coord_sf(datum = NA) +
+                  theme_void()
+
+tpoint_years <- ggplot() +
+                  geom_sf(data = tpoint_16_21,
+                          aes(color = as.factor(yr))) +
+                  geom_sf(data = okcounty, fill = NA) +
+                  scale_color_discrete(name = "Year") +
+                  coord_sf(datum = NA) +
+                  theme_void()
+
+ggsave("tpath_years.tiff", 
+       plot = choropleth,
+       width = 6, 
+       height = 6, 
+       dpi = 300, 
+       compression = "lzw")
+
+ggsave("tpoint_years.tiff", 
+       plot = choropleth,
+       width = 6, 
+       height = 6, 
+       dpi = 300, 
+       compression = "lzw")
+
+plot_grid(tpath_years, tpoint_years, 
+          labels = c("A) Tornado Paths", 
+                     "B) Tornado Points",
+                     label_size = 12),
+          ncol = 1, 
+          rel_heights = c(1, 1),
+          align = "hv",
+          vjust = 5)
+```
+```{r}
+ggplot(data = countymap) +
+  geom_sf(aes(fill = tdens)) +
+  scale_fill_distiller(name = expression("Tornadoes/1000 km"^2),
+                       palette = "YlOrRd",
+                       breaks = pretty_breaks(),
+                       direction = 1) +
+
+  theme_void() +
+  theme(legend.position = "bottom")
+
+```
+```{r}
+df_join <- countymap %>%
+  left_join(countypnt, by = "GEOID") %>%
+  replace(is.na(.), 0)
+
+ggplot(data = df_join) +
+  geom_sf(aes(fill = tdens)) +
+  geom_sf(data = okcounty, 
+          fill = NA,
+          color = "gray") +
+  scale_fill_distiller(name = expression("Tornadoes/1000 km"^2),
+                       palette = "YlOrRd",
+                       breaks = pretty_breaks(),
+                       direction = 1) +
+  facet_wrap(vars(yr), ncol = 2) +
+  coord_sf(datum = NA) +
+  theme_void() +
+  theme(legend.position = "bottom")
+```
