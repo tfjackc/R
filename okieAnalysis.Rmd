@@ -273,9 +273,11 @@ ggplot(data = countymap) +
 
 ```
 ```{r}
+# part b lab 4
 df_join <- countymap %>%
   left_join(countypnt, by = "GEOID") %>%
-  replace(is.na(.), 0)
+  replace(is.na(.), 0) %>%
+  filter(yr != 0)  
 
 ggplot(data = df_join) +
   geom_sf(aes(fill = tdens)) +
@@ -290,4 +292,52 @@ ggplot(data = df_join) +
   coord_sf(datum = NA) +
   theme_void() +
   theme(legend.position = "bottom")
+```
+```{r}
+
+```
+```{r}
+url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
+earthquakes <- readOGR(url)
+eqsf <- st_as_sf(earthquakes)
+faults_url <- "https://services.arcgis.com/jIL9msH9OI208GCb/ArcGIS/rest/services/Active_Faults/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&relationParam=&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&defaultSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pgeojson&token="
+faults <-readOGR(faults_url)
+faults_sf <- st_as_sf(faults)
+```
+
+```{r}
+pal <- colorBin(
+  palette = "Spectral",
+  domain = eqsf$mag,
+  reverse = TRUE,
+  bins = 5
+)
+
+leaflet() %>%
+  addTiles() %>%
+  setView(-117.841293, 46.195042, 3) %>%
+  addProviderTiles(providers$CartoDB, group = "Grayscale") %>% 
+  addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain") %>%
+  addPolylines(data = faults_sf, group = "vectorData") %>%
+  addCircleMarkers(data = eqsf,
+                   fillColor = ~pal(mag),
+                   radius = ~eqsf$mag * 2,
+                   stroke = FALSE,
+                   color = "Spectral",
+                   fillOpacity = 0.6,
+                   popup = paste0(
+                     "<strong>Title:</strong> ", eqsf$title,
+                     "<br><strong>Magnitude:</strong> ", eqsf$mag,
+                     "<br><strong>Intensity:</strong> ", eqsf$mmi,
+                     "<br><strong>Sig:</strong> ", eqsf$sig
+                   ),
+                   group = "vectorData"
+  ) %>% 
+  addLegend(pal = pal, values = eqsf$mag, position = "bottomleft", title = "Magnitude") %>%
+  addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("Terrain", "Grayscale"))
+```
+
+```{r}
+library(mapview)
+mapview(eqsf)
 ```
