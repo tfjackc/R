@@ -20,7 +20,7 @@ okcounty <- st_read(here("data", "ok_counties.shp"), quiet = TRUE)
 tpoint <- st_read(here("data", "ok_tornado_point.shp"), quiet = TRUE)
 tpath <- st_read(here("data", "ok_tornado_path.shp"), quiet = TRUE)
 
-class(okcounty)
+#class(okcounty)
 glimpse(okcounty)
 ```
 ```{r}
@@ -81,14 +81,12 @@ ggplot() +
 ```
 ```{r}
 countypnt <- st_join(tpoint_16_21, okcounty)
-glimpse(countypnt)
 
 # convert to a non spatial dataframe
 countypnt <- st_drop_geometry(countypnt)
 countysum <- countypnt %>%
   group_by(GEOID) %>%
   summarize(tcnt = n())
-glimpse(countysum)
 ```
 ```{r}
 countymap <- okcounty %>%
@@ -329,7 +327,7 @@ leaflet() %>%
                      "<strong>Title:</strong> ", eqsf$title,
                      "<br><strong>Magnitude:</strong> ", eqsf$mag,
                      "<br><strong>Intensity:</strong> ", eqsf$mmi,
-                     "<br><strong>Sig:</strong> ", eqsf$sig
+                     "<br><strong>Significanceq:</strong> ", eqsf$sig
                    ),
                    group = "vectorData"
   ) %>% 
