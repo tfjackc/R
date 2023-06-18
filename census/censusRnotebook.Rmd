@@ -2,7 +2,12 @@
 title: "Colpitt Census"
 output: html_notebook
 ---
-
+```{r}
+pkgs <- c("tidycensus", "tidyverse", "mapview", "plotly", "ggiraph", 
+          "survey", "srvyr", "mapedit", "mapboxapi", 
+          "leafsync", "spdep", "segregation")
+install.packages(pkgs)
+```
 
 ```{r}
 options(htmltools.dir.version = FALSE)
@@ -24,7 +29,18 @@ or_grads <- get_acs(
 # tidverse logo
 tidyverse_logo()
 ```
+```{r}
+oregon_grads <- ggplot() + # use ggplot to create the plot.
+                  geom_sf(data = or_grads, # use geom_sf to plot the polyline geometry.
+                          aes(fill = as.factor(estimate)),
+                          linewidth = 1) + # color based on year.
+                  #geom_sf(data = okcounty, fill = NA) + # plot polygon geometry
+                  scale_color_discrete(name = "estimate") + # set color scale
+                  coord_sf(datum = NA) + # put geometries on the same coordinate reference system
+                  theme_void() 
 
+oregon_grads
+```
 ```{r}
 or_plot_errorbar <- ggplot(or_grads, aes(x = estimate, y = reorder(NAME, estimate))) +
   geom_errorbar(aes(xmin = estimate - moe, xmax = estimate + moe), 
