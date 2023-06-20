@@ -1,0 +1,60 @@
+---
+title: "Colpitt Census"
+output: html_notebook
+---
+```{r}
+pkgs <- c("tidycensus", "tidyverse", "mapview", "plotly", "ggiraph", 
+          "survey", "srvyr", "mapedit", "mapboxapi", 
+          "leafsync", "spdep", "segregation")
+install.packages(pkgs)
+```
+
+```{r}
+options(htmltools.dir.version = FALSE)
+options(tigris_use_cache = TRUE)
+library(tidycensus)
+library(tidyverse)
+library(scales)
+options(scipen = 999)
+sf::sf_use_s2(FALSE)
+
+# Data objects needed
+or_grads <- get_acs(
+  geography = "county",
+  variables = "DP02_0066P",
+  state = "OR",
+  year = 2021,
+  geometry = TRUE
+)
+# tidverse logo
+tidyverse_logo()
+```
+```{r}
+oregon_grads <- ggplot() + # use ggplot to create the plot.
+                  geom_sf(data = or_grads, # use geom_sf to plot the polyline geometry.
+                          aes(fill = as.factor(estimate)),
+                          linewidth = 1) + # color based on year.
+                  #geom_sf(data = okcounty, fill = NA) + # plot polygon geometry
+                  scale_color_discrete(name = "estimate") + # set color scale
+                  coord_sf(datum = NA) + # put geometries on the same coordinate reference system
+                  theme_void() 
+
+oregon_grads
+```
+```{r}
+or_plot_errorbar <- ggplot(or_grads, aes(x = estimate, y = reorder(NAME, estimate))) +
+  geom_errorbar(aes(xmin = estimate - moe, xmax = estimate + moe), 
+                width = 0.5, linewidth = 0.5) +
+  geom_point(color = "darkred", size = 2) +
+  #scale_x_continuous(labels = label_percent()) +
+  scale_y_discrete(labels = function(x) str_remove(x, " County, Oregon|, Oregon")) +
+  labs(title = "Percentage of people w/ graduate degrees",
+       subtitle = "Counties in Oregon",
+       caption = "Data acquired with R and tidycensus. Error bars represent margin of error around estimates.",
+       "ACS estimate",
+      y = "",
+      x = "Percentage") +
+  theme_minimal(base_size = 12)
+  
+or_plot_errorbar
+```

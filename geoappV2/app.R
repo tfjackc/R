@@ -6,6 +6,7 @@ library(here)
 library(sf)
 library(rgdal)
 
+# think about pulling in main tectonic boundaries and buffering and then finding earthquake density in certain global zones.
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 earthquakes <- readOGR(url)
