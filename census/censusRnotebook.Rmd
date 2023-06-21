@@ -4,7 +4,9 @@ output:
   html_document:
     df_print: paged
 ---
-#### Welcome to my notebook covering the use of the tidycensus R package for extracting and evaluating census data in the state of Oregon. We are interested in uncovering the percentages of the population with graduate level degrees at a county level. 
+#### Welcome to my notebook covering the use of the tidycensus R package for extracting and evaluating census data in the state of Oregon. In part A We are interested in uncovering the percentages of the population with graduate level degrees at a county level. Part B will continue to focus on education data, Stay tuned to find out more!
+
+### Import Libraries
 
 ##### Start by importing the list of libraries that will assist us in connecting with the Census Bureau's APIs and visualizing the desired data. 
 ```{css, echo=FALSE}
@@ -18,173 +20,170 @@ library(tidyverse) # data wrangling
 library(mapview) # spatial data visualizer
 library(plotly) # graph / chart visualizer
 library(ggiraph) # graph / chart visualizer
-library(ggplot2)
-library(DT)
-library(scales)
-library(sf)
+library(ggplot2) # graph / chart visualizer
+library(DT) # fancy tables
+library(scales) # scales map data to aesthetics
+library(sf) # spatial data package
 ```
-##### We will use the get_acs() function from tidycensus package to pull data from the census bureau. The function defaults to the 2017-2021 5-year ACS dataset. Which is necessary for us, since there are a list of counties in Oregon with a population of less than 65,000. 
-```{r message = FALSE, warning = FALSE}
-# Data objects needed
-or_grads <- get_acs(
-  geography = "county",
-  variables = "DP02_0066P", 
-  state = "OR",
-  year = 2021,
-)
+### Part A
+<hr />
+### Data Source
 
-or_grads_table <- or_grads %>%
-  separate(NAME, into = c("county", "state"), sep = ", ") %>%
-  arrange(-estimate) %>%
-  select(county, estimate, moe)
+##### We will use the get_acs() function from the tidycensus package to pull data from the census bureau. The function defaults to the 2017-2021 5-year ACS dataset. Which is necessary for us, since there are a list of counties in Oregon with a population of less than 65,000. 
+
+##### The data we would like to visualize is the percent of the population that have a graduate degree at the county level in the state of Oregon.  
+```{r message = FALSE, warning = FALSE}
+# use the get_acs() function for importing data
+or_grads <- get_acs(
+  geography = "county", # county level geography
+  variables = "DP02_0066P", # variable for percent of the population that have a graduate degrees
+  state = "OR", 
+  year = 2021
+)
 ```
-##### We have our results in a table and we can filter through to see all counties with their percent of population with graduate degrees. Lets use the datatable() function from the DT library to provide a bit more interactivity for previewing the results.
+### Data Manipulation & DataTables
+
+##### An important aspect of the tidycensus package is that is presents the data to us in a tidy format. The data is pre-cleaned and takes little wrangling to answer questions.
 ```{r}
-# function from the DT library
+# filter and arrange results
+or_grads_table <- or_grads %>%
+  separate(NAME, into = c("county", "state"), sep = ", ") %>% # create county and state columns
+  arrange(-estimate) %>% # sort by estimate descending
+  select(county, state, estimate, moe) # select important columns
+```
+
+##### By using the datatable() function from the DT library we can filter our results to see the desired information.
+```{r}
+# function from the DT library to create a datatable
 datatable(or_grads_table)
 ```
-##### Top 3 counties --
-<hr />
-* Benton
-* Multnomah
-* Washington
+**Figure 1** above reveals the data imported from the get_acs() function. Results conclude that the top 3 counties with graduate degrees is Benton, Multnomah, and Washington. Bottom 3 counties are Malheur, Gilliam, and Morrow.
 
 <hr />
 
-##### Bottom 3 counties --
-<hr />
-* Malheur
-* Gilliam
-* Morrow
-```{r fig.height=6}
-or_plot <- ggplot(or_grads_table, aes(x = estimate,
-                                      y = reorder(county, estimate))) + 
-  geom_point(color="navy", size = 3) +
-  scale_x_continuous(labels = function(x) paste0(x, '%')) +
-  scale_y_discrete(labels = function(x) str_remove(x, " County")) +
-  labs(title = "% Population with graduate degrees, 2017-2021 ACS",
-       subtitle = "Counties in Oregon",
+### Data Visualization & Analysis
+
+##### Now that our data is imported and in a proper format. We can begin using ggplot to visualize the percentage of the oregon population that graduate have degrees. 
+```{r fig.height=6, fig.width=9.5}
+# use ggplot with estimate as the x axis and county as the y axis
+or_plot <- ggplot(or_grads_table, aes(x = estimate, 
+                                      y = reorder(county, estimate))) + # sort by counties high to low
+  geom_point(color="navy", size = 3) + # state color navy blue for point data
+  scale_x_continuous(labels = function(x) paste0(x, '%')) + # concatenate '%' to estimate data
+  scale_y_discrete(labels = function(x) str_remove(x, " County")) + # strip 'county' from the name column
+  labs(title = "% Population with graduate degrees, 2017-2021 ACS", # use appropriate title
+       subtitle = "Counties in Oregon", # use appropriate subtitle
        caption = "Data acquired with R and tidycensus",
-       x = "ACS estimate",
+       x = "ACS estimate Percentage",
        y = "") +
-  theme_minimal(base_size = 12)
+  theme_minimal(base_size = 12) # remove tick marks 
   
-or_plot
+or_plot # print plot
 ```
-```{r fig.height=6}
-or_plot_errorbar <- ggplot(or_grads, aes(x = estimate, y = reorder(NAME, estimate))) +
+**Figure 2** above plots the counties by estimate value in a descending order. We get a full picture of our results without having to filter through multiple pages in a table.
+
+< hr />
+
+##### All tables in the tidycensus package come with a margin of error column to give us an understanding of accuracy in the dataset. Typically, census data from geographies of larger population have a lower margin of error.
+
+##### Lets plot the MOE variable with our estimate variable below. 
+```{r fig.height=6, fig.width=9.5}
+# create plot revealing moe and estimate variables
+or_plot_errorbar <- ggplot(or_grads, aes(x = estimate, y = reorder(NAME, estimate))) + # sort by counties high to low
   geom_errorbar(aes(xmin = estimate - moe, xmax = estimate + moe), 
                 width = 0.5, linewidth = 0.5) +
-  geom_point(color = "gold", size = 3) +
-  scale_x_continuous(labels = function(x) paste0(x, '%')) +
-  scale_y_discrete(labels = function(x) str_remove(x, " County, Oregon|, Oregon")) +
-  labs(title = "% Population with graduate degrees, 2017-2021 ACS",
-       subtitle = "Counties in Oregon",
+  geom_point(color = "gold", size = 3) + # state color gold for point data
+  scale_x_continuous(labels = function(x) paste0(x, '%')) + # concatenate '%' to estimate data
+  scale_y_discrete(labels = function(x) str_remove(x, " County, Oregon|, Oregon")) + # strip 'county' from the name column
+  labs(title = "% Population with graduate degrees, 2017-2021 ACS", # use appropriate title
+       subtitle = "Counties in Oregon", # use appropriate subtitle
        caption = "Data acquired with R and tidycensus. Error bars represent margin of error around estimates.",
        "ACS estimate",
       y = "",
       x = "Percentage") +
-  theme_minimal(base_size = 12)
+  theme_minimal(base_size = 12) # remove tick marks 
   
-or_plot_errorbar
+or_plot_errorbar # print plot
 ```
-```{r message = FALSE, warning = FALSE}
-or_income <- get_acs(
-  geography = "county",
-  variables = "B19013A_001",
-  state = "OR",
-  year = 2021,
-  geometry = TRUE
-)
-```
-```{r}
-or_house <- get_acs(
-  geography = "county",
-  variables = "B25105_001",
-  state = "OR",
-  year = 2021,
-  geometry = TRUE
-)
+**Figure 3** above reveals the margin of error associated with the estimate data.
 
+<hr />
 
-```
+### Interative Plots
+
+##### Using ggplotly() I'm going to recreate the plot above but leveraging the interactivity of the plotly library.
 ```{r fig.height=6, fig.width=9.5}
-ggplotly(or_plot_errorbar, tooltip = "x")
-
+# use ggplotly() and add a tooltip, and extend the margins of the plot
+ggplotly(or_plot_errorbar, tooltip = "x")%>% 
+  layout(margin = list(l = 50, r = 50, b = 50, t = 50))
 ```
+**Figure 4** Hover over the points in the plot above to see the interactive tootip.
 
-```{r  message = FALSE, warning = FALSE}
-# Data objects needed
-or_grads_geom <- get_acs(
-  geography = "county",
-  variables = "DP02_0066P", 
-  state = "OR",
-  year = 2021,
-  geometry = TRUE
-)
+<hr />
 
+### Part B
 
-ggplot() + # use ggplot to create the plot.
-    geom_sf(data = or_grads_geom, # use geom_sf to plot the polyline geometry.
-            aes(fill = as.factor(estimate)),
-            linewidth = 0.4) + # color based on year.
-    scale_color_discrete(name = "estimate") + # set color scale
-    coord_sf(datum = NA) + # put geometries on the same coordinate reference system
-    theme_void()
-```
-```{r}
-# median salary for computer programmers across the country
-#income_variables <- "B24121_067"
+<hr />
 
-# populatiion for computer programmers
-#pop_variables <- "B24114_067"
+##### Continuing with the theme of education, lets import more data through the tidycensus package. 
 
-renter_bachelors<- get_acs(
-  geography = "tract",
-  variables = "B25013_011",
-  state = "OR",
-  year = 2021,
-  geometry = TRUE
-)
+**What percentage of people with bachelor's degrees rent or own their home in the state of Oregon at the tract level?**
 
-View(renter_bachelors)
-```
-```{r}
-
-# figure out decennial data, and join total population against renter occupied housing number, find % across the country
-
-
-#doctorates<- get_decennial(
-#  geography = "block",
-#  variables = "B15003_025",
-#  year = 2020,
-#  geometry = TRUE
-#)
-
-#View(doctorates)
-```
-```{r}
-options(tigris_use_cache = TRUE)
-#B25013_011
-#Estimate!!Total:!!Renter-occupied housing units:!!Bachelor's degree or higher
-#TENURE BY EDUCATIONAL ATTAINMENT OF HOUSEHOLDER
-
-#or <- get_decennial(geography = "tract", variables = "B25013_011", year = 2020, state = "OR", geometry = TRUE)
-  #mutate(pct = 100 * (value / summary_value))
-
-#ggplot(or, aes(fill = pct, color = pct)) +
-#  geom_sf() 
-  #facet_wrap(~variable)
+##### To find variables that will assist us in our analysis, we will use the load_variables() function to filter through the ACS data. 
+```{r message = FALSE, warning = FALSE}
+# use the load_variables function() with the year and ACS 5 year parameter
 vars <- load_variables(2021, "acs5")
-View(vars)
+# load vars into a datatable
+datatable(vars)
 ```
-```{r}
+**Figure 5** By using the search feature in the datatable, you see examples of available results. For example search "bachelor's" to find variable codes moving forward. 
+
+<hr />
+
+### Import Data
+
+##### We will need to pull in two datasets and eventually merge the results into one table. 
+##### -- "B25013_006" is the population of people with bachelor's degrees that own their home.
+##### -- "B25013_011" is the population of people with bachelor's degrees that rent their home.
+```{r message = FALSE, warning = FALSE}
+# import data at the tract level for home owners
+bach_owners <- get_acs(
+  geography = "tract",
+  variables = "B25013_006",
+  state = "OR",
+  geometry = TRUE # get multipolygon data of Oregon tracts
+)
+
+# import data at the tract level for renters
 bach_renters <- get_acs(
   geography = "tract",
   variables = "B25013_011",
   state = "OR",
-  geometry = TRUE
+  geometry = FALSE # geometry is false because we are getting our multipolygon data in the owners dataset. 
 )
+```
+### Data Wrangling
 
-mapview(bach_renters, zcol = "estimate")
+##### Use functions of the tidyverse to rename, select, and mutuate columns to fit our analysis. 
+```{r}
+# clarify the name of the estimate & moe columns before joining
+bach_owners <- bach_owners %>%
+  rename(estimate_owners = estimate, moe_owners = moe)
+
+# clarify the name of the estimate & moe columns before joining
+bach_renters <- bach_renters %>%
+  rename(estimate_renters = estimate, moe_renters = moe) %>%
+  select(GEOID, estimate_renters, moe_renters) # drop uneccessary values
+
+# join dataframes on GEOID, and create percent columns of each category
+bach_housing <- left_join(bach_owners, bach_renters, by='GEOID') %>%
+  select(GEOID, NAME, estimate_owners, estimate_renters, moe_owners, moe_renters, geometry) %>%
+  mutate(estimate_total = estimate_renters + estimate_owners) %>%
+  mutate(percent_renters = (estimate_renters/estimate_total)*100) %>%
+  mutate(percent_owners = (estimate_owners/estimate_total)*100)
+```
+
+
+```{r}
+mapview(bach_housing, zcol = "percent_renters", zcol = "percent_owners")
 ```
