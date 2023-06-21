@@ -86,6 +86,26 @@ or_plot_errorbar <- ggplot(or_grads, aes(x = estimate, y = reorder(NAME, estimat
   
 or_plot_errorbar
 ```
+```{r}
+or_income <- get_acs(
+  geography = "county",
+  variables = "B19013A_001",
+  state = "OR",
+  year = 2021,
+  geometry = TRUE
+)
+```
+```{r}
+or_house <- get_acs(
+  geography = "county",
+  variables = "B25105_001",
+  state = "OR",
+  year = 2021,
+  geometry = TRUE
+)
+
+
+```
 ```{r fig.height=6, fig.width=9.5}
 ggplotly(or_plot_errorbar, tooltip = "x")
 
