@@ -126,8 +126,52 @@ or_grads_geom <- get_acs(
 ggplot() + # use ggplot to create the plot.
     geom_sf(data = or_grads_geom, # use geom_sf to plot the polyline geometry.
             aes(fill = as.factor(estimate)),
-            linewidth = 1) + # color based on year.
+            linewidth = 0.4) + # color based on year.
     scale_color_discrete(name = "estimate") + # set color scale
     coord_sf(datum = NA) + # put geometries on the same coordinate reference system
     theme_void()
+```
+```{r}
+# median salary for computer programmers across the country
+#income_variables <- "B24121_067"
+
+# populatiion for computer programmers
+#pop_variables <- "B24114_067"
+
+renter_bachelors<- get_acs(
+  geography = "tract",
+  variables = "B25013_011",
+  state = "OR",
+  year = 2021,
+  geometry = TRUE
+)
+
+View(renter_bachelors)
+```
+```{r}
+
+# figure out decennial data, and join total population against renter occupied housing number, find % across the country
+
+
+doctorates<- get_decennial(
+  geography = "block",
+  variables = "B15003_025",
+  year = 2020,
+  geometry = TRUE
+)
+
+View(doctorates)
+```
+```{r}
+options(tigris_use_cache = TRUE)
+#B25013_011
+#Estimate!!Total:!!Renter-occupied housing units:!!Bachelor's degree or higher
+#TENURE BY EDUCATIONAL ATTAINMENT OF HOUSEHOLDER
+
+or <- get_decennial(geography = "tract", variables = "B25013_011", year = 2020, state = "OR", geometry = TRUE)
+  #mutate(pct = 100 * (value / summary_value))
+
+ggplot(or, aes(fill = pct, color = pct)) +
+  geom_sf() 
+  #facet_wrap(~variable)
 ```
