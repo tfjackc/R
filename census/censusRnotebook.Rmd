@@ -1,8 +1,6 @@
 ---
 title: "Higher education % in Oregon - Alis volat propriis"
-output:
-  html_document:
-    df_print: paged
+output: html_notebook
 ---
 #### Welcome to my notebook covering the use of the tidycensus R package for extracting and evaluating census data in the state of Oregon. In part A We are interested in uncovering the percentages of the population with graduate level degrees at a county level. Part B will continue to focus on education data, Stay tuned to find out more!
 
@@ -165,7 +163,7 @@ bach_renters <- get_acs(
 ### Data Wrangling
 
 ##### Use functions of the tidyverse to rename, select, and mutuate columns to fit our analysis. 
-```{r}
+```{r message = FALSE, warning = FALSE}
 # clarify the name of the estimate & moe columns before joining
 bach_owners <- bach_owners %>%
   rename(estimate_owners = estimate, moe_owners = moe)
@@ -173,17 +171,29 @@ bach_owners <- bach_owners %>%
 # clarify the name of the estimate & moe columns before joining
 bach_renters <- bach_renters %>%
   rename(estimate_renters = estimate, moe_renters = moe) %>%
-  select(GEOID, estimate_renters, moe_renters) # drop uneccessary values
+  select(GEOID, estimate_renters, moe_renters) # drop unnecessary values
 
 # join dataframes on GEOID, and create percent columns of each category
 bach_housing <- left_join(bach_owners, bach_renters, by='GEOID') %>%
   select(GEOID, NAME, estimate_owners, estimate_renters, moe_owners, moe_renters, geometry) %>%
-  mutate(estimate_total = estimate_renters + estimate_owners) %>%
-  mutate(percent_renters = (estimate_renters/estimate_total)*100) %>%
-  mutate(percent_owners = (estimate_owners/estimate_total)*100)
+  mutate(estimate_total = estimate_renters + estimate_owners) %>% # create a total value
+  mutate(percent_renters = (estimate_renters/estimate_total)*100) %>% # create a % of renters
+  mutate(percent_owners = (estimate_owners/estimate_total)*100) %>% # create a % of owners
+  mutate(across(where(is.numeric), ~ round(.x, digits = 2)))
+```
+### Data Visualization & Analysis
+
+```{r, fig.height=6, fig.width=9.5, message = FALSE, warning = FALSE}
+bach_housing_table <- bach_housing %>%
+  select(NAME, percent_renters, percent_owners) %>%
+  arrange(-percent_renters)
+
+
+datatable(bach_housing_table)
 ```
 
 
+##### We are going to start with the mapview package to get a glimplse into the 
 ```{r}
 mapview(bach_housing, zcol = "percent_renters", zcol = "percent_owners")
 ```
