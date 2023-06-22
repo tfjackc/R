@@ -1,6 +1,8 @@
 ---
-title: "Higher education % in Oregon - Alis volat propriis"
-output: html_notebook
+title: "Education Statistics in Oregon - Alis volat propriis"
+output:
+  html_document:
+    df_print: paged
 ---
 #### Welcome to my notebook covering the use of the tidycensus R package for extracting and evaluating census data in the state of Oregon. In part A We are interested in uncovering the percentages of the population with graduate level degrees at a county level. Part B will continue to focus on education data, Stay tuned to find out more!
 
@@ -239,3 +241,6 @@ owners <- ggplot(bach_housing, aes(fill = percent_owners)) +
 plot_grid(renters, owners, ncol=1, align = "hv")
 ```
 **Figure 8** The last figure paints a clear picture of the city center vs rural areas in terms of the ability to own a home in the Portland Metro area. 
+
+<hr />
+<hr />
