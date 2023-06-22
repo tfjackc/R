@@ -22,6 +22,8 @@ library(ggplot2) # graph / chart visualizer
 library(DT) # fancy tables
 library(scales) # scales map data to aesthetics
 library(sf) # spatial data package
+library(tigris) # erase water
+library(cowplot) # plot_grid()
 ```
 ### Part A
 <hr />
@@ -125,7 +127,9 @@ ggplotly(or_plot_errorbar, tooltip = "x")%>%
 
 ##### Continuing with the theme of education, lets import more data through the tidycensus package. 
 
-**What percentage of people with bachelor's degrees rent or own their home in the state of Oregon at the tract level?**
+##### <strong>What percentage of people with bachelor's degrees rent or own their home in Washington and Multnomah County, Oregon at the tract level?</strong>
+
+##### These two counties together cover the most populus city of Oregon. You guessed it, Portland.
 
 ##### To find variables that will assist us in our analysis, we will use the load_variables() function to filter through the ACS data. 
 ```{r message = FALSE, warning = FALSE}
@@ -141,22 +145,24 @@ datatable(vars)
 ### Import Data
 
 ##### We will need to pull in two datasets and eventually merge the results into one table. 
-##### -- "B25013_006" is the population of people with bachelor's degrees that own their home.
-##### -- "B25013_011" is the population of people with bachelor's degrees that rent their home.
+##### "B25013_006" is the population of people with bachelor's degrees that own their home.
+##### "B25013_011" is the population of people with bachelor's degrees that rent their home.
 ```{r message = FALSE, warning = FALSE}
 # import data at the tract level for home owners
-bach_owners <- get_acs(
+bach_owners <- erase_water(get_acs(
   geography = "tract",
   variables = "B25013_006",
   state = "OR",
+  county = c("Washington", "Multnomah"),
   geometry = TRUE # get multipolygon data of Oregon tracts
-)
+))
 
 # import data at the tract level for renters
 bach_renters <- get_acs(
   geography = "tract",
   variables = "B25013_011",
   state = "OR",
+  county = c("Washington", "Multnomah"),
   geometry = FALSE # geometry is false because we are getting our multipolygon data in the owners dataset. 
 )
 ```
@@ -184,6 +190,7 @@ bach_housing <- left_join(bach_owners, bach_renters, by='GEOID') %>%
 ### Data Visualization & Analysis
 
 ```{r, fig.height=6, fig.width=9.5, message = FALSE, warning = FALSE}
+
 bach_housing_table <- bach_housing %>%
   select(NAME, percent_renters, percent_owners) %>%
   arrange(-percent_renters)
@@ -191,9 +198,40 @@ bach_housing_table <- bach_housing %>%
 
 datatable(bach_housing_table)
 ```
+**Figure 6**
 
-
-##### We are going to start with the mapview package to get a glimplse into the 
-```{r}
-mapview(bach_housing, zcol = "percent_renters", zcol = "percent_owners")
+##### We are going to start with the mapview package to get a glimplse into the data.
+```{r ,fig.height=6, fig.width=9.5}
+# use the percent_renters variable to display in the mapview
+mapview(bach_housing,
+        layer.name = "% Renters<br/>2017-2021 ACS", # change layer name
+        zcol = "percent_renters") # select a variable to display
 ```
+**Figure 7** Mapview is programmtically a simple way to display insightful and interactive data. 
+
+
+```{r}
+renters <- ggplot(bach_housing, aes(fill = percent_renters)) + 
+  geom_sf() + 
+  theme_void() + 
+  scale_fill_viridis_c(option = "rocket") + 
+  labs(title = "Percent of Population w/ Bachelor's Degree Renting by Census tract",
+       subtitle = "Washington & Multnomah County, Oregon",
+       fill = "% Renting",
+       caption = "2017-2021 ACS | tidycensus R package")
+
+owners <- ggplot(bach_housing, aes(fill = percent_owners)) + 
+  geom_sf() + 
+  theme_void() + 
+  scale_fill_viridis_c(option = "rocket") + 
+  labs(title = "Percent of Population w/ Bachelor's Degree That Own Their Home by Census tract",
+       subtitle = "Washington & Multnomah County, Oregon",
+       fill = "% Owners",
+       caption = "2017-2021 ACS | tidycensus R package")
+
+```
+```{r, fig.height=8, fig.width=9.5}
+
+plot_grid(renters, owners, ncol=1, align = "hv")
+```
+**Figure 8**
