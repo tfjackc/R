@@ -7,10 +7,21 @@ library(here)
 library(sp)
 library(sf)
 library(rgdal)
+library(lubridate)
+library(shiny.telemetry)
+
+telemetry <- Telemetry$new()
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 earthquakes <- readOGR(url)
 eqsf <- st_as_sf(earthquakes)
+eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
+eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
+
+eqsf_table <- eqsf %>%
+  st_drop_geometry(eqsf) %>%
+  select(mag, place, time_formatted)
+
 
 ui <- fluidPage(
   titlePanel("USGS Earthquakes"),
@@ -32,7 +43,10 @@ ui <- fluidPage(
     leafletOutput("eqMap"),
   )
   ),
-  DTOutput("timeTable"),
+  DT::dataTableOutput("timeTable"),
+  use_telemetry(), # 2. Add necessary Javascript to Shiny
+  numericInput("n", "n", 1),
+  plotOutput('plot')
 )
 
 server <- function(input, output, session) {
@@ -71,10 +85,15 @@ server <- function(input, output, session) {
         )
       )
   })
-  output$timeTable <- renderDT(eqsf,
-                               options = list(
-                                 initComplete = JS('function(setting, json) { alert("Welcome to USGS Real-Time Data")}')
-                               ))
+  output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
+    initComplete = JS(
+      "function(settings, json) {",
+      "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+      "}")
+  ))
+  telemetry$start_session() # 3. Minimal setup to track events
+  output$plot <- renderPlot({ hist(runif(input$slider)) })
+                              
 }
 
 shinyApp(ui, server)
