@@ -8,6 +8,9 @@ library(sp)
 library(sf)
 library(rgdal)
 library(lubridate)
+library(shiny.telemetry)
+
+telemetry <- Telemetry$new()
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 earthquakes <- readOGR(url)
@@ -41,6 +44,9 @@ ui <- fluidPage(
   )
   ),
   DT::dataTableOutput("timeTable"),
+  use_telemetry(), # 2. Add necessary Javascript to Shiny
+  numericInput("n", "n", 1),
+  plotOutput('plot')
 )
 
 server <- function(input, output, session) {
@@ -85,6 +91,8 @@ server <- function(input, output, session) {
       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
       "}")
   ))
+  telemetry$start_session() # 3. Minimal setup to track events
+  output$plot <- renderPlot({ hist(runif(input$slider)) })
                               
 }
 
