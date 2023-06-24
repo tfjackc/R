@@ -32,7 +32,7 @@ ui <- fluidPage(
     leafletOutput("eqMap"),
   )
   ),
-  DTOutput("timeTable"),
+  DT::dataTableOutput("timeTable"),
 )
 
 server <- function(input, output, session) {
@@ -71,10 +71,13 @@ server <- function(input, output, session) {
         )
       )
   })
-  output$timeTable <- renderDT(eqsf,
-                               options = list(
-                                 initComplete = JS('function(setting, json) { alert("Welcome to USGS Real-Time Data")}')
-                               ))
+  output$timeTable <- DT::renderDataTable(eqsf, server = FALSE, options = list(
+    initComplete = JS(
+      "function(settings, json) {",
+      "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+      "}")
+  ))
+                              
 }
 
 shinyApp(ui, server)
