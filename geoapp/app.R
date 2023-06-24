@@ -16,6 +16,7 @@ eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = 
 eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
 
 eqsf_table <- eqsf %>%
+  st_drop_geometry(eqsf) %>%
   select(mag, place, time_formatted)
 
 
