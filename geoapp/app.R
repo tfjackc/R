@@ -43,7 +43,7 @@ ui <- fluidPage(
       )
     ),
     column(width = 10,
-    leafletOutput("eqMap"),
+    leafletOutput("eqMap", height="600px")
   )
   ),
   DT::dataTableOutput("timeTable")
@@ -103,7 +103,5 @@ server <- function(input, output, session) {
   #output$plot <- renderPlot({ hist(runif(input$slider)) })
                               
 }
-
-
 
 shinyApp(ui, server)
