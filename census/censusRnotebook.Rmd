@@ -185,5 +185,5 @@ bach_housing <- left_join(bach_owners, bach_renters, by='GEOID') %>%
 
 
 ```{r}
-mapview(bach_housing, zcol = "percent_renters", zcol = "percent_owners")
+mapview(bach_housing, zcol = "percent_renters")
 ```
