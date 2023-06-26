@@ -1,5 +1,5 @@
 ---
-title: "Higher education % in Oregon - Alis volat propriis"
+title: "Education Statistics in Oregon - Alis volat propriis"
 output:
   html_document:
     df_print: paged
@@ -24,6 +24,8 @@ library(ggplot2) # graph / chart visualizer
 library(DT) # fancy tables
 library(scales) # scales map data to aesthetics
 library(sf) # spatial data package
+library(tigris) # erase water
+library(cowplot) # plot_grid()
 ```
 ### Part A
 <hr />
@@ -38,7 +40,8 @@ or_grads <- get_acs(
   geography = "county", # county level geography
   variables = "DP02_0066P", # variable for percent of the population that have a graduate degrees
   state = "OR", 
-  year = 2021
+  year = 2021,
+  progress_bar = FALSE
 )
 ```
 ### Data Manipulation & DataTables
@@ -82,7 +85,7 @@ or_plot # print plot
 ```
 **Figure 2** above plots the counties by estimate value in a descending order. We get a full picture of our results without having to filter through multiple pages in a table.
 
-< hr />
+<hr />
 
 ##### All tables in the tidycensus package come with a margin of error column to give us an understanding of accuracy in the dataset. Typically, census data from geographies of larger population have a lower margin of error.
 
@@ -127,7 +130,9 @@ ggplotly(or_plot_errorbar, tooltip = "x")%>%
 
 ##### Continuing with the theme of education, lets import more data through the tidycensus package. 
 
-**What percentage of people with bachelor's degrees rent or own their home in the state of Oregon at the tract level?**
+##### <strong>What percentage of people with bachelor's degrees rent or own their home in Washington and Multnomah County, Oregon at the tract level?</strong>
+
+##### These two counties together cover the most populus city of Oregon. You guessed it, Portland.
 
 ##### To find variables that will assist us in our analysis, we will use the load_variables() function to filter through the ACS data. 
 ```{r message = FALSE, warning = FALSE}
@@ -143,29 +148,33 @@ datatable(vars)
 ### Import Data
 
 ##### We will need to pull in two datasets and eventually merge the results into one table. 
-##### -- "B25013_006" is the population of people with bachelor's degrees that own their home.
-##### -- "B25013_011" is the population of people with bachelor's degrees that rent their home.
+##### "B25013_006" is the population of people with bachelor's degrees that own their home.
+##### "B25013_011" is the population of people with bachelor's degrees that rent their home.
 ```{r message = FALSE, warning = FALSE}
 # import data at the tract level for home owners
-bach_owners <- get_acs(
+bach_owners <- erase_water(get_acs(
   geography = "tract",
   variables = "B25013_006",
   state = "OR",
-  geometry = TRUE # get multipolygon data of Oregon tracts
-)
+  county = c("Washington", "Multnomah"), # select multiple counties
+  geometry = TRUE, # get multipolygon data of Oregon tracts
+  progress_bar = FALSE
+))
 
 # import data at the tract level for renters
 bach_renters <- get_acs(
   geography = "tract",
   variables = "B25013_011",
   state = "OR",
-  geometry = FALSE # geometry is false because we are getting our multipolygon data in the owners dataset. 
-)
+  county = c("Washington", "Multnomah"), # select multiple counties
+  geometry = FALSE, # geometry is false because we are getting our multipolygon data in the owners dataset. 
+  progress_bar = FALSE
+  )
 ```
 ### Data Wrangling
 
-##### Use functions of the tidyverse to rename, select, and mutuate columns to fit our analysis. 
-```{r}
+##### Use functions of the tidyverse to rename, select, and mutuate columns to fit our analysis. Since the estimate data originally comes as a count, we will sum up renters and owners to a create a total column and a percentage column for each.
+```{r message = FALSE, warning = FALSE}
 # clarify the name of the estimate & moe columns before joining
 bach_owners <- bach_owners %>%
   rename(estimate_owners = estimate, moe_owners = moe)
@@ -173,17 +182,65 @@ bach_owners <- bach_owners %>%
 # clarify the name of the estimate & moe columns before joining
 bach_renters <- bach_renters %>%
   rename(estimate_renters = estimate, moe_renters = moe) %>%
-  select(GEOID, estimate_renters, moe_renters) # drop uneccessary values
+  select(GEOID, estimate_renters, moe_renters) # drop unnecessary values
 
 # join dataframes on GEOID, and create percent columns of each category
 bach_housing <- left_join(bach_owners, bach_renters, by='GEOID') %>%
   select(GEOID, NAME, estimate_owners, estimate_renters, moe_owners, moe_renters, geometry) %>%
-  mutate(estimate_total = estimate_renters + estimate_owners) %>%
-  mutate(percent_renters = (estimate_renters/estimate_total)*100) %>%
-  mutate(percent_owners = (estimate_owners/estimate_total)*100)
+  mutate(estimate_total = estimate_renters + estimate_owners) %>% # create a total value
+  mutate(percent_renters = (estimate_renters/estimate_total)*100) %>% # create a % of renters
+  mutate(percent_owners = (estimate_owners/estimate_total)*100) %>% # create a % of owners
+  mutate(across(where(is.numeric), ~ round(.x, digits = 2)))
 ```
+### Data Visualization & Analysis
 
+##### Now that the data is wrangled we can view it in a table before mapping and plotting the desired variables. 
+```{r, fig.height=6, fig.width=9.5, message = FALSE, warning = FALSE}
+# select percent renters and owners
+bach_housing_table <- bach_housing %>%
+  select(NAME, percent_renters, percent_owners) %>%
+  arrange(-percent_renters) # arrange in descending order
 
-```{r}
-mapview(bach_housing, zcol = "percent_renters")
+# preview in datatable
+datatable(bach_housing_table)
 ```
+**Figure 6** As suspected in Portland there are a high number of renters with bachelor's degrees. Multiple tracts reveal areas with 100% of our particular study rent their homes. 
+
+##### We are going to start with the mapview package to get a glimplse into the data.
+```{r ,fig.height=6, fig.width=9.5}
+# use the percent_renters variable to display in the mapview
+mapview(bach_housing,
+        layer.name = "% Renters<br/>2017-2021 ACS", # change layer name
+        zcol = "percent_renters") # select a variable to display
+```
+**Figure 7** Mapview is programmtically a simple way to display insightful and interactive data. We can now easiy visualize that the city center has the highest number of renters versus owners and shifts as you move into the more rural areas.
+
+##### Now that we have sampled the data in mapview, lets use ggplot to create a set of chloropleth maps for both categories (renting and owning). 
+```{r, fig.height=8, fig.width=9.5}
+# create ggplot for renters
+renters <- ggplot(bach_housing, aes(fill = percent_renters)) + # fill with percent renters
+  geom_sf() + 
+  theme_void() + 
+  scale_fill_viridis_c(option = "rocket") + # use rocket color scheme
+  labs(title = "Percent of Population w/ Bachelor's Degree Renting by Census tract", # create clear titles and captions
+       subtitle = "Washington & Multnomah County, Oregon",
+       fill = "% Renting",
+       caption = "2017-2021 ACS | tidycensus R package")
+
+# create ggplot for owners
+owners <- ggplot(bach_housing, aes(fill = percent_owners)) + 
+  geom_sf() + 
+  theme_void() + 
+  scale_fill_viridis_c(option = "rocket") +  # use rocket color scheme
+  labs(title = "Percent of Population w/ Bachelor's Degree That Own Their Home by Census tract",  # create clear titles and captions
+       subtitle = "Washington & Multnomah County, Oregon",
+       fill = "% Owners",
+       caption = "2017-2021 ACS | tidycensus R package")
+
+# use plot_grid from the cowplot library to stack the maps
+plot_grid(renters, owners, ncol=1, align = "hv")
+```
+**Figure 8** The last figure paints a clear picture of the city center vs rural areas in terms of the ability to own a home in the Portland Metro area. 
+
+<hr />
+<hr />
