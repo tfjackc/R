@@ -9,22 +9,17 @@ library(sf)
 library(rgdal)
 library(lubridate)
 library(shiny.telemetry)
+library(leaflet.extras)
 
-telemetry <- Telemetry$new()
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 earthquakes <- readOGR(url)
 eqsf <- st_as_sf(earthquakes)
-eqsf <- st_transform(eqsf, crs = 4269)
-
 eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
 eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
 eqsf_table <- eqsf %>%
   st_drop_geometry(eqsf) %>%
   select(mag, place, time_formatted)
-
-coordinates <- st_coordinates(eqsf)
-
 
 ui <- fluidPage(
   titlePanel("USGS Earthquakes"),
@@ -41,18 +36,18 @@ ui <- fluidPage(
         ),
         selected = "all"
       )
+      #shiny::actionButton("clearPoints", "Clear Points")
     ),
     column(width = 10,
-    leafletOutput("eqMap"),
-  )
+           leafletOutput("eqMap", height = "600px")
+    )
   ),
-  DT::dataTableOutput("timeTable"),
-  use_telemetry(), # 2. Add necessary Javascript to Shiny
-  numericInput("n", "n", 1),
-  plotOutput('plot')
+  DT::dataTableOutput("timeTable")
 )
 
 server <- function(input, output, session) {
+  pointsAdded <- reactiveValues(clicked = FALSE)
+  
   output$eqMap <- renderLeaflet({
     filteredEqsf <- eqsf
     
@@ -72,33 +67,36 @@ server <- function(input, output, session) {
     )
     
     leaflet(filteredEqsf) %>%
-      addTiles() %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter") %>% # add CARTO tiles
+      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain") %>% # add esri tiles
       setView(-117.841293, 46.195042, 3) %>%
       addCircleMarkers(
-        fillColor = ~ pal(mag),
-        radius = ~ filteredEqsf$mag * 2,
+        fillColor = ~pal(mag),
+        radius = ~filteredEqsf$mag * 2,
         stroke = FALSE,
         color = "black",
         fillOpacity = 0.6,
         popup = paste0(
           "<strong>Title:</strong> ", filteredEqsf$title,
+          "<br><strong>Time:</strong> ", filteredEqsf$time_formatted,
           "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
           "<br><strong>MMI:</strong> ", filteredEqsf$mmi,
           "<br><strong>Sig:</strong> ", filteredEqsf$sig
-        )
-      )
+        ),
+        group = "vectorData"
+      ) %>%
+      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
+      addDrawToolbar(editOptions = editToolbarOptions())
   })
+  
   output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
     initComplete = JS(
       "function(settings, json) {",
       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
       "}")
   ))
-  telemetry$start_session() # 3. Minimal setup to track events
-  output$plot <- renderPlot({ hist(runif(input$slider)) })
-                              
 }
 
-
-
 shinyApp(ui, server)
+
+      
