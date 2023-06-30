@@ -10,6 +10,8 @@ library(rgdal)
 library(lubridate)
 library(shiny.telemetry)
 library(leaflet.extras)
+library(geojsonsf)
+library(geojsonio)
 
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
@@ -35,7 +37,11 @@ ui <- fluidPage(
           "pt", "se", "us", "uu", "uw"
         ),
         selected = "all"
-      )
+      ),
+      #textInput("text", label = h3("Text input"), value = "Enter text..."),
+      
+      #hr(),
+      #fluidRow(column(3, verbatimTextOutput("value")))
       #shiny::actionButton("clearPoints", "Clear Points")
     ),
     column(width = 10,
@@ -134,10 +140,17 @@ server <- function(input, output, session) {
     print(input$eqMap_draw_all_features)
     
     if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
+      
+      
       numFeatures <- length(input$eqMap_draw_all_features$features)
       lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
       lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
       print(paste0("geom coordinates: ", lat, ", ", lng))
+      
+      if (!is.null(radius)) {
+      print(paste("radius: ", round(radius, digits = 2),"m"))
+      }
     }
   })
   
