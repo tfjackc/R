@@ -95,7 +95,56 @@ server <- function(input, output, session) {
       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
       "}")
   ))
+  
+  
+  # Start of Drawing
+  observeEvent(input$eqMap_draw_start, {
+    print("Start of drawing")
+    print(input$leafmap_draw_start)
+  })
+  
+  # Stop of Drawing
+  observeEvent(input$eqMap_draw_stop, {
+    print("Stopped drawing")
+    print(input$leafmap_draw_stop)
+  })
+  
+  # New Feature
+  observeEvent(input$eqMap_draw_new_feature, {
+    print("New Feature")
+    print(input$eqMap_draw_new_feature)
+  })
+  
+  # Edited Features
+  observeEvent(input$eqMap_draw_edited_features, {
+    print("Edited Features")
+    print(input$eqMap_draw_edited_features)
+  })
+  
+  # Deleted features
+  observeEvent(input$eqMap_draw_deleted_features, {
+    print("Deleted Features")
+    print(input$eqMap_draw_deleted_features)
+  })
+  
+  # We also listen for draw_all_features which is called anytime
+  # features are created/edited/deleted from the map
+  observeEvent(input$eqMap_draw_all_features, {
+    print("All Features")
+    print(input$eqMap_draw_all_features)
+    
+    if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
+      numFeatures <- length(input$eqMap_draw_all_features$features)
+      lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
+      lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      print(paste0("geom coordinates: ", lat, ", ", lng))
+    }
+  })
+  
+  
+    
 }
+
 
 shinyApp(ui, server)
 
