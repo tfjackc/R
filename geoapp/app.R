@@ -137,7 +137,12 @@ server <- function(input, output, session) {
       numFeatures <- length(input$eqMap_draw_all_features$features)
       lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
       lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
       print(paste0("geom coordinates: ", lat, ", ", lng))
+      
+      if (!is.null(radius)) {
+      print(paste("radius: ", round(radius, digits = 2),"m"))
+      }
     }
   })
   
