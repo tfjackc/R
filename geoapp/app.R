@@ -21,14 +21,16 @@ eqsf_table <- eqsf %>%
   st_drop_geometry(eqsf) %>%
   select(mag, place, time_formatted)
 
-ui <- fluidPage(
-  titlePanel("USGS Earthquakes"),
-  fluidRow(
-    column(
+# create user interface
+ui <- fluidPage( #html and body elements of the application 
+  titlePanel("USGS Earthquakes"), # create title
+  fluidRow( # sidebar element for slider and dropdown widgets
+    column( # stack widgets vertically 
       width = 2,
+      # magnitude filter
       sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
       selectInput(
-        "dropdown",
+        "dropdown", # seismic detection station filter
         h4("Select the location source"),
         choices = c(
           "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
@@ -36,12 +38,13 @@ ui <- fluidPage(
         ),
         selected = "all"
       )
-      #shiny::actionButton("clearPoints", "Clear Points")
-    ),
-    column(width = 10,
+    ), 
+    # create web map with leaflet
+    column(width = 10, 
            leafletOutput("eqMap", height = "600px")
     )
   ),
+  # create a datatable with DT
   DT::dataTableOutput("timeTable")
 )
 
