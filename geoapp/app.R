@@ -143,34 +143,45 @@ server <- function(input, output, session) {
       
       
       numFeatures <- length(input$eqMap_draw_all_features$features)
-      lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
-      lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
+      lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
       radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
       print(paste0("geom coordinates: ", lat, ", ", lng))
       
       if (!is.null(radius)) {
-      print(paste("radius: ", round(radius, digits = 2),"m"))
+        print(paste("radius: ", round(radius, digits = 2), "m"))
+        
+        # Convert radius from meters to decimal degrees
+        new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
+        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979)
+      
+        
+        circle_geom <- st_buffer(new_geom, radius)
+        #circ_transformed <- st_transform(circle_geom, 4979)
+        print("-----------eq data-----------")
+        print(st_crs(eqsf))
+        print("----------- data-----------")
+        print(st_crs(circle_geom))
+       
+        st_write(circle_geom, dsn = "circle_geom1.geojson", layer = "circle_geom.geojson", driver = "GeoJSON", append=FALSE)
+        
+        # Check if points overlap or are contained within the circle
+        circle_pts <- st_intersection(eqsf, circle_geom)
+        
+        df <- st_as_sf(circle_pts)
+        
+        # Print the resulting dataframe
+        View(df)
       }
       
-      new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
-      new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326)
-      print(class(new_geom))
       
-      circle_geom <- st_buffer(new_geom, radius)
-      circle_geom <- st_set_crs(circle_geom, 4326)
-      print(st_geometry(circle_geom))
-    
-      
-      points_for_dbscan <- st_intersects(eqsf, circle_geom)
-      print(st_geometry(points_for_dbscan))
     }
   })
   
   
-    
+  
 }
 
 
 shinyApp(ui, server)
 
-      
