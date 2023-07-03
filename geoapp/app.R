@@ -12,7 +12,8 @@ library(shiny.telemetry)
 library(leaflet.extras)
 library(geojsonsf)
 library(geojsonio)
-
+library(dbscan)
+library(factoextra)
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 earthquakes <- readOGR(url)
@@ -48,7 +49,8 @@ ui <- fluidPage(
            leafletOutput("eqMap", height = "600px")
     )
   ),
-  DT::dataTableOutput("timeTable")
+  DT::dataTableOutput("timeTable"),
+  plotOutput("dbscan_plot")
 )
 
 server <- function(input, output, session) {
@@ -155,31 +157,25 @@ server <- function(input, output, session) {
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
         new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979)
       
-        
         circle_geom <- st_buffer(new_geom, radius)
-        #circ_transformed <- st_transform(circle_geom, 4979)
-        print("-----------eq data-----------")
-        print(st_crs(eqsf))
-        print("----------- data-----------")
-        print(st_crs(circle_geom))
-       
-        st_write(circle_geom, dsn = "circle_geom1.geojson", layer = "circle_geom.geojson", driver = "GeoJSON", append=FALSE)
-        
-        # Check if points overlap or are contained within the circle
         circle_pts <- st_intersection(eqsf, circle_geom)
-        
         df <- st_as_sf(circle_pts)
+        df_coords <- data.frame(st_coordinates(df))
+        locs = dplyr::select(df_coords,X,Y)
+        locs.scaled = scale(locs,center = T,scale = T)
         
-        # Print the resulting dataframe
-        View(df)
+        print(locs.scaled)
+        db = dbscan::dbscan(locs.scaled,eps=0.45,minPts = 5)
+        #db
+        
+        #View(df)
+        output$dbscan_plot <- renderPlot({
+          factoextra::fviz_cluster(db,locs.scaled,stand = F,ellipse = T,geom = "point")
+        })
+        
       }
-      
-      
     }
   })
-  
-  
-  
 }
 
 
