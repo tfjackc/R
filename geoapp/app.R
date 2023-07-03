@@ -50,7 +50,7 @@ ui <- fluidPage(
     )
   ),
   DT::dataTableOutput("timeTable"),
-  plotOutput("dbscan_plot")
+  plotOutput("dbscan_plot", height="600px", width="600px")
 )
 
 server <- function(input, output, session) {
