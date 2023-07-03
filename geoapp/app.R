@@ -24,34 +24,21 @@ eqsf_table <- eqsf %>%
   st_drop_geometry(eqsf) %>%
   select(mag, place, time_formatted)
 
-ui <- fluidPage(
-  titlePanel("USGS Earthquakes"),
-  fluidRow(
-    column(
-      width = 2,
-      sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
-      selectInput(
-        "dropdown",
-        h4("Select the location source"),
-        choices = c(
-          "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-          "pt", "se", "us", "uu", "uw"
-        ),
-        selected = "all"
-      ),
-      #textInput("text", label = h3("Text input"), value = "Enter text..."),
-      
-      #hr(),
-      #fluidRow(column(3, verbatimTextOutput("value")))
-      #shiny::actionButton("clearPoints", "Clear Points")
-    ),
-    column(width = 10,
-           leafletOutput("eqMap", height = "600px")
-    )
-  ),
-  DT::dataTableOutput("timeTable"),
-  plotOutput("dbscan_plot", height="600px", width="600px")
+ui <- htmlTemplate("template.html",
+                   map = leafletOutput("eqMap"),
+                   timeTable = dataTableOutput("timeTable"),
+                   dbplot = plotOutput("dbscan_plot"),
+                   slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
+                   dropdown = selectInput("dropdown",
+                                          h4("Select the location source"),
+                                          choices = c(
+                                            "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
+                                            "pt", "se", "us", "uu", "uw"
+                                          ),
+                                          selected = "all")
 )
+
+
 
 server <- function(input, output, session) {
   pointsAdded <- reactiveValues(clicked = FALSE)
@@ -156,7 +143,7 @@ server <- function(input, output, session) {
         # Convert radius from meters to decimal degrees
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
         new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979)
-      
+        
         circle_geom <- st_buffer(new_geom, radius)
         circle_pts <- st_intersection(eqsf, circle_geom)
         df <- st_as_sf(circle_pts)
@@ -177,7 +164,6 @@ server <- function(input, output, session) {
     }
   })
 }
-
 
 shinyApp(ui, server)
 
