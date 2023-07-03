@@ -10,6 +10,8 @@ library(rgdal)
 library(lubridate)
 library(shiny.telemetry)
 library(leaflet.extras)
+library(geojsonsf)
+library(geojsonio)
 
 
 url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
@@ -21,30 +23,31 @@ eqsf_table <- eqsf %>%
   st_drop_geometry(eqsf) %>%
   select(mag, place, time_formatted)
 
-# create user interface
-ui <- fluidPage( #html and body elements of the application 
-  titlePanel("USGS Earthquakes"), # create title
-  fluidRow( # sidebar element for slider and dropdown widgets
-    column( # stack widgets vertically 
+ui <- fluidPage(
+  titlePanel("USGS Earthquakes"),
+  fluidRow(
+    column(
       width = 2,
-      # magnitude filter
       sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
       selectInput(
-        "dropdown", # seismic detection station filter
+        "dropdown",
         h4("Select the location source"),
         choices = c(
           "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
           "pt", "se", "us", "uu", "uw"
         ),
         selected = "all"
-      )
-    ), 
-    # create web map with leaflet
-    column(width = 10, 
+      ),
+      #textInput("text", label = h3("Text input"), value = "Enter text..."),
+      
+      #hr(),
+      #fluidRow(column(3, verbatimTextOutput("value")))
+      #shiny::actionButton("clearPoints", "Clear Points")
+    ),
+    column(width = 10,
            leafletOutput("eqMap", height = "600px")
     )
   ),
-  # create a datatable with DT
   DT::dataTableOutput("timeTable")
 )
 
@@ -98,7 +101,75 @@ server <- function(input, output, session) {
       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
       "}")
   ))
+  
+  
+  # Start of Drawing
+  observeEvent(input$eqMap_draw_start, {
+    print("Start of drawing")
+    print(input$leafmap_draw_start)
+  })
+  
+  # Stop of Drawing
+  observeEvent(input$eqMap_draw_stop, {
+    print("Stopped drawing")
+    print(input$leafmap_draw_stop)
+  })
+  
+  # New Feature
+  observeEvent(input$eqMap_draw_new_feature, {
+    print("New Feature")
+    print(input$eqMap_draw_new_feature)
+  })
+  
+  # Edited Features
+  observeEvent(input$eqMap_draw_edited_features, {
+    print("Edited Features")
+    print(input$eqMap_draw_edited_features)
+  })
+  
+  # Deleted features
+  observeEvent(input$eqMap_draw_deleted_features, {
+    print("Deleted Features")
+    print(input$eqMap_draw_deleted_features)
+  })
+  
+  # We also listen for draw_all_features which is called anytime
+  # features are created/edited/deleted from the map
+  observeEvent(input$eqMap_draw_all_features, {
+    print("All Features")
+    print(input$eqMap_draw_all_features)
+    
+    if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
+      
+      
+      numFeatures <- length(input$eqMap_draw_all_features$features)
+      lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
+      lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
+      print(paste0("geom coordinates: ", lat, ", ", lng))
+      
+      if (!is.null(radius)) {
+      print(paste("radius: ", round(radius, digits = 2),"m"))
+      }
+      
+      new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
+      new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326)
+      print(class(new_geom))
+      
+      circle_geom <- st_buffer(new_geom, radius)
+      circle_geom <- st_set_crs(circle_geom, 4326)
+      print(st_geometry(circle_geom))
+    
+      
+      points_for_dbscan <- st_intersects(eqsf, circle_geom)
+      print(st_geometry(points_for_dbscan))
+    }
+  })
+  
+  
+    
 }
+
 
 shinyApp(ui, server)
 
