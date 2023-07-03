@@ -151,6 +151,18 @@ server <- function(input, output, session) {
       if (!is.null(radius)) {
       print(paste("radius: ", round(radius, digits = 2),"m"))
       }
+      
+      new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
+      new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326)
+      print(class(new_geom))
+      
+      circle_geom <- st_buffer(new_geom, radius)
+      circle_geom <- st_set_crs(circle_geom, 4326)
+      print(st_geometry(circle_geom))
+    
+      
+      points_for_dbscan <- st_intersects(eqsf, circle_geom)
+      print(st_geometry(points_for_dbscan))
     }
   })
   
