@@ -4,14 +4,32 @@
   <head>
     {{ headContent() }}
     {{ bootstrapLib() }}
+    <link rel="stylesheet" href="main.css"></link>
   </head>
   <body>
-    <div>
-      {{ slider }}
-      {{ dropdown }}
+    <script type="text/JavaScript">
+      function toggleContent() {
+  const content = document.querySelector('.container .content');
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+  } else {
+    content.style.display = 'none';
+  }
+}
+    </script>
+
       {{ map }}
-      {{ timeTable }}
-      {{ dbplot }}
-    </div>
+      <div class="container">
+  <button class="header" onclick="toggleContent()">Read Me!</button>
+      <div class="content">
+    {{ timeTable }}
+    {{ slider }}
+    {{ dropdown }}
+    {{ dbplot }}
+  </div>
+        </div>
+
+
   </body>
 </html>
+
