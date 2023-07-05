@@ -27,9 +27,10 @@ ui <- htmlTemplate("template.html",
                                             "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
                                             "pt", "se", "us", "uu", "uw"
                                           ),
-                                          selected = "all")
-                   #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-#)
+                                          selected = "all"),
+                   dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                                            choices = c("1 Month", "1 Week", "1 Day"),
+                                            selected = "1 Month")
 )
 
 
@@ -41,8 +42,19 @@ server <- function(input, output, session) {
   url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
   url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
   
-  earthquakes <- readOGR(url_month)
-  eqsf <- st_as_sf(earthquakes)
+  dataInput <- reactive({
+    if (input$dataSelect != "1 Month" & input$dataSelect != "1 Week") {
+      url_day
+    } else if (input$dataSelect != "1 Month" & input$dataSelect != "1 Day") {
+      url_week
+    } else if (input$dataSelect != "1 Week" & input$dataSelect != "1 Day") {
+      url_month
+    }
+  })
+  
+  observe({
+    earthquakes <- readOGR(dataInput())
+    eqsf <- st_as_sf(earthquakes)
   eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
   eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
   eqsf_table <- eqsf %>%
@@ -169,6 +181,7 @@ server <- function(input, output, session) {
         
       }
     }
+  })
   })
 }
 
