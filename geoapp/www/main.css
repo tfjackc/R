@@ -32,10 +32,6 @@ body {
   display: none;
 }
 
-.container.open .content {
-  display: block;
-}
-
 #filter {
   position: fixed;
   top: 0;

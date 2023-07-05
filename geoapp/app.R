@@ -14,6 +14,7 @@ library(geojsonsf)
 library(geojsonio)
 library(dbscan)
 library(factoextra)
+#library(shinycssloaders)
 
 
 ui <- htmlTemplate("template.html",
@@ -21,13 +22,13 @@ ui <- htmlTemplate("template.html",
                    timeTable = dataTableOutput("timeTable"),
                    dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
-                   dropdown = selectInput("dropdown",
-                                          h4("Select the location source"),
-                                          choices = c(
-                                            "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-                                            "pt", "se", "us", "uu", "uw"
-                                          ),
-                                          selected = "all"),
+                  #dropdown = selectInput("dropdown",
+                   #                       h4("Select the location source"),
+                    #                      choices = c(
+                     #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
+                      #                      "pt", "se", "us", "uu", "uw"
+                       #                   ),
+                        #                  selected = "all"),
                    dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                             choices = c("1 Month", "1 Week", "1 Day"),
                                             selected = "1 Month")
@@ -55,20 +56,20 @@ server <- function(input, output, session) {
   observe({
     earthquakes <- readOGR(dataInput())
     eqsf <- st_as_sf(earthquakes)
-  eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
-  eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
-  eqsf_table <- eqsf %>%
-    st_drop_geometry(eqsf) %>%
-    select(mag, place, time_formatted)
+    eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
+    eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
+    eqsf_table <- eqsf %>%
+      st_drop_geometry(eqsf) %>%
+      select(mag, place, time_formatted)
 
   
   output$eqMap <- renderLeaflet({
     filteredEqsf <- eqsf
     
-    if (input$dropdown != "all") {
-      filteredEqsf <- filteredEqsf %>%
-        filter(net == input$dropdown)
-    }
+    #if (input$dropdown != "all") {
+    #  filteredEqsf <- filteredEqsf %>%
+    #    filter(net == input$dropdown)
+    #}
     
     filteredEqsf <- filteredEqsf %>%
       filter(mag >= input$slider[1] & mag <= input$slider[2])
@@ -101,7 +102,7 @@ server <- function(input, output, session) {
       ) %>%
       addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
       addDrawToolbar(editOptions = editToolbarOptions())
-  })
+  })  })
   
   output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
     initComplete = JS(
@@ -182,7 +183,7 @@ server <- function(input, output, session) {
       }
     }
   })
-  })
+
 }
 
 shinyApp(ui, server)

@@ -13,16 +13,13 @@
 
 <script type="text/JavaScript">
 function toggleContent() {
-const content = document.querySelector('.container .content');
-if (content.style.display === 'none') {
-content.style.display = 'block';
-} else {
-content.style.display = 'none';
+  const content = document.querySelector('.container .content');
+  if (content.style.display !== 'block') {
+    content.style.display = 'block';
+  } else {
+    content.style.display = 'none';
+  }
 }
-}
-
-
-
 
 </script>
 {{ map }}
@@ -31,7 +28,6 @@ content.style.display = 'none';
 <div class="content">
 {{ dataSelect }}
 {{ slider }}
-{{ dropdown }}
 </div>
 </div>
 
