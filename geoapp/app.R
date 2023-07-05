@@ -82,9 +82,9 @@ server <- function(input, output, session) {
     )
     
     leaflet(filteredEqsf) %>%
-      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter") %>% # add CARTO tiles
-      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain") %>% # add esri tiles
-      setView(-117.841293, 46.195042, 3) %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
+      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain", options = tileOptions(noWrap = FALSE)) %>% # add esri tiles
+      setView(-18.525960, 26.846869, 3) %>%
       addCircleMarkers(
         fillColor = ~pal(mag),
         radius = ~filteredEqsf$mag * 2,

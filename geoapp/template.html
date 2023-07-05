@@ -25,18 +25,28 @@ function toggleContent() {
 {{ map }}
 
 <div class="container">
-<div class="content">
-{{ dataSelect }}
-{{ slider }}
+  <div class="content">
+    {{ dataSelect }}
+    {{ slider }}
+  </div>
 </div>
-</div>
-
-
 <button id="filter" onclick="toggleContent()">
   <h2><i class="bi bi-funnel"></i></h2>
 </button>
 
-
+<div class="accordion" style="bottom: 0;">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        DataTable
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+      <div class="accordion-body">
+        {{ timeTable }}
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
-

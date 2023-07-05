@@ -47,3 +47,31 @@ body {
   align-items: center;
 }
 
+
+.accordion {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+.accordion-item {
+  margin-bottom: 14px;
+}
+
+.accordion-button {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.accordion-button:hover {
+  background-color: #f8f9fa;
+}
+
+.accordion-body {
+  padding: 10px;
+}
