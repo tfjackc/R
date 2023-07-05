@@ -15,20 +15,12 @@ library(geojsonio)
 library(dbscan)
 library(factoextra)
 
-url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
-earthquakes <- readOGR(url)
-eqsf <- st_as_sf(earthquakes)
-eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
-eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
-eqsf_table <- eqsf %>%
-  st_drop_geometry(eqsf) %>%
-  select(mag, place, time_formatted)
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    timeTable = dataTableOutput("timeTable"),
                    dbplot = plotOutput("dbscan_plot"),
-                   slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
+                   slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    dropdown = selectInput("dropdown",
                                           h4("Select the location source"),
                                           choices = c(
@@ -36,12 +28,27 @@ ui <- htmlTemplate("template.html",
                                             "pt", "se", "us", "uu", "uw"
                                           ),
                                           selected = "all")
+                   #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
+#)
 )
 
- 
 
 server <- function(input, output, session) {
+  
   pointsAdded <- reactiveValues(clicked = FALSE)
+  
+  url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
+  url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
+  url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+  
+  earthquakes <- readOGR(url_month)
+  eqsf <- st_as_sf(earthquakes)
+  eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
+  eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
+  eqsf_table <- eqsf %>%
+    st_drop_geometry(eqsf) %>%
+    select(mag, place, time_formatted)
+
   
   output$eqMap <- renderLeaflet({
     filteredEqsf <- eqsf
@@ -52,7 +59,7 @@ server <- function(input, output, session) {
     }
     
     filteredEqsf <- filteredEqsf %>%
-      filter(mag > input$slider)
+      filter(mag >= input$slider[1] & mag <= input$slider[2])
     
     pal <- colorBin(
       palette = "Spectral",
