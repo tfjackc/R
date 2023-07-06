@@ -40,7 +40,7 @@ ui <- htmlTemplate("template.html",
 
 server <- function(input, output, session) {
   
-  pointsAdded <- reactiveValues(clicked = FALSE)
+  #pointsAdded <- reactiveValues(clicked = FALSE)
   
   url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
   url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
