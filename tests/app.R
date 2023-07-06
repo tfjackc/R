@@ -21,7 +21,7 @@ library(mapboxapi)
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    timeTable = dataTableOutput("timeTable"),
-                  # dbplot = plotOutput("dbscan_plot"),
+                   dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
