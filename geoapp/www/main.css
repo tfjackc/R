@@ -1,5 +1,4 @@
-html,
-body {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -14,20 +13,18 @@ body {
 }
 
 .container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  margin-bottom: 30px;
+  position: absolute;
+  top: 0;
+  right: 0;
   background-color: rgba(211, 211, 211, 0.9);
   z-index: 9999; /* Ensure the container is above other elements */
 }
 
-
-.container .content {
-  display: none;
+.content {
+  display: none; /* Initially hide the content div */
 }
 
-.container.open .content {
-  display: block;
+#timeTable {
+position: absolute;
+bottom: 0px;
 }

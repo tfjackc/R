@@ -26,7 +26,7 @@ eqsf_table <- eqsf %>%
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
-                   timeTable = dataTableOutput("timeTable"),
+                   timeTable = dataTableOutput("timeTable", height="400px"),
                    dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
                    dropdown = selectInput("dropdown",
@@ -38,7 +38,6 @@ ui <- htmlTemplate("template.html",
                                           selected = "all")
 )
 
- 
 
 server <- function(input, output, session) {
   pointsAdded <- reactiveValues(clicked = FALSE)
