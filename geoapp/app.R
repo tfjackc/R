@@ -17,8 +17,6 @@ library(factoextra)
 library(mapboxapi)
 
 
-#library(shinycssloaders)
-
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
@@ -40,7 +38,27 @@ ui <- htmlTemplate("template.html",
 
 server <- function(input, output, session) {
   
-  #pointsAdded <- reactiveValues(clicked = FALSE)
+  output$eqMap <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
+      addTiles(
+        urlTemplate = "http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw",
+        options = tileOptions(
+          id = "mapbox/satellite-v9",  # Replace with your desired Mapbox style ID
+          accessToken = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw"  # Replace with your Mapbox access token
+        ),
+        group = "Satellite"
+      ) %>%
+      # addMapboxTiles(style_id = "satellite",
+      #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
+      #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
+      #             username = "tfjackc",
+      #            group = "Satellite") %>%
+      setView(-18.525960, 26.846869, 3) %>%
+      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
+      addDrawToolbar(editOptions = editToolbarOptions())
+  })
+  
   
   url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
   url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -56,8 +74,8 @@ server <- function(input, output, session) {
     }
   })
   
-  observe({
-    earthquakes <- readOGR(dataInput())
+  filteredEqsf <- reactive({
+    earthquakes <- read_sf(dataInput())
     eqsf <- st_as_sf(earthquakes)
     eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
     eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
@@ -65,66 +83,52 @@ server <- function(input, output, session) {
       st_drop_geometry(eqsf) %>%
       select(mag, place, time_formatted)
     
+    filteredData <- eqsf %>%
+      filter(mag >= input$slider[1] & mag <= input$slider[2])
     
-    output$eqMap <- renderLeaflet({
-      filteredEqsf <- eqsf
-      
-      #if (input$dropdown != "all") {
-      #  filteredEqsf <- filteredEqsf %>%
-      #    filter(net == input$dropdown)
-      #}
-      
-      filteredEqsf <- filteredEqsf %>%
-        filter(mag >= input$slider[1] & mag <= input$slider[2])
-      
-      pal <- colorBin(
-        palette = "Spectral",
-        domain = filteredEqsf$mag,
-        reverse = TRUE,
-        bins = 5
+    pal <- colorBin(
+      palette = "Spectral",
+      domain = filteredData$mag,
+      reverse = TRUE,
+      bins = 5
+    )
+    
+    list(filteredData = filteredData, pal = pal, eqsf_table = eqsf_table, eqsf = eqsf)
+  })
+  
+  
+  observe({
+    filteredData <- filteredEqsf()$filteredData
+    pal <- filteredEqsf()$pal
+    
+    leafletProxy("eqMap", data = filteredData) %>%
+      clearMarkers() %>%
+      addCircleMarkers(
+        fillColor = ~pal(mag),
+        radius = ~mag * 2,
+        stroke = FALSE,
+        color = "black",
+        fillOpacity = 0.6,
+        popup = paste0(
+          "<strong>Title:</strong> ", filteredData$title,
+          "<br><strong>Time:</strong> ", format(filteredData$time, "%Y-%m-%d %I:%M:%S %p %Z"),
+          "<br><strong>Magnitude:</strong> ", filteredData$mag,
+          "<br><strong>MMI:</strong> ", filteredData$mmi,
+          "<br><strong>Sig:</strong> ", filteredData$sig
+        ),
+        group = "vectorData"
       )
-      
-      leaflet(filteredEqsf) %>%
-        addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
-        addTiles(
-          urlTemplate = "http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw",
-          options = tileOptions(
-            id = "mapbox/satellite-v9",  # Replace with your desired Mapbox style ID
-            accessToken = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw"  # Replace with your Mapbox access token
-          ),
-          group = "Satellite"
-        ) %>%
-        # addMapboxTiles(style_id = "satellite",
-        #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
-        #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
-        #             username = "tfjackc",
-        #            group = "Satellite") %>%
-        setView(-18.525960, 26.846869, 3) %>%
-        addCircleMarkers(
-          fillColor = ~pal(mag),
-          radius = ~filteredEqsf$mag * 2,
-          stroke = FALSE,
-          color = "black",
-          fillOpacity = 0.6,
-          popup = paste0(
-            "<strong>Title:</strong> ", filteredEqsf$title,
-            "<br><strong>Time:</strong> ", filteredEqsf$time_formatted,
-            "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
-            "<br><strong>MMI:</strong> ", filteredEqsf$mmi,
-            "<br><strong>Sig:</strong> ", filteredEqsf$sig
-          ),
-          group = "vectorData"
-        ) %>%
-        addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
-        addDrawToolbar(editOptions = editToolbarOptions())
-    })  
-    
+  })
+  
+  observe({
+    eqsf_table <- filteredEqsf()$eqsf_table
     output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
       initComplete = JS(
         "function(settings, json) {",
         "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
         "}")
     ))
+  })
   
   
   # Start of Drawing
@@ -160,6 +164,9 @@ server <- function(input, output, session) {
   # We also listen for draw_all_features which is called anytime
   # features are created/edited/deleted from the map
   observeEvent(input$eqMap_draw_all_features, {
+    
+    eqsf <- filteredEqsf()$eqsf
+    
     print("All Features")
     print(input$eqMap_draw_all_features)
     
@@ -177,7 +184,13 @@ server <- function(input, output, session) {
         
         # Convert radius from meters to decimal degrees
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
-        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979)
+        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979) #4979 change before deployment to 4326
+        
+        print("-------eqsf----------")
+        print(st_crs(eqsf))
+        print("-------new_geom------")
+        print(st_crs(new_geom))
+        print("---------------------")
         
         circle_geom <- st_buffer(new_geom, radius)
         circle_pts <- st_intersection(eqsf, circle_geom)
@@ -198,7 +211,10 @@ server <- function(input, output, session) {
       }
     }
   })
-  })
+  
+  
+  
 }
+
 
 shinyApp(ui, server)

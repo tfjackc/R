@@ -21,6 +21,16 @@ function toggleContent() {
   }
 }
 
+function tc() {
+  var x = document.getElementById("container-dbscan");
+  if (x.style.display !== 'block') {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+
+
 </script>
 {{ map }}
 
@@ -30,9 +40,22 @@ function toggleContent() {
     {{ slider }}
   </div>
 </div>
+
+<div id="container-dbscan">
+  <div id="content-dbscan">
+     {{ dbplot }}
+  </div>
+</div>
+
+
 <button id="filter" onclick="toggleContent()">
   <h4><i class="bi bi-sliders align-middle"></i></h4>
-  <span class="ms-1 d-none d-sm-inline"><h4>Filters</h4></span>
+  <span class="ms-1 d-none d-sm-inline"><h5>Filters</h5></span>
+</button>
+
+<button id="plotButton" onclick="tc()">
+  <h4><i class="bi bi-upc-scan align-middle"></i></h4>
+  <span class="ms-1 d-none d-sm-inline"><h5>DBSCAN</h5></span>
 </button>
 
 <div class="accordion" style="bottom: 0;">
@@ -45,6 +68,7 @@ function toggleContent() {
     <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne">
       <div class="accordion-body">
         {{ timeTable }}
+
       </div>
     </div>
   </div>
