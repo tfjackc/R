@@ -40,11 +40,20 @@ ui <- htmlTemplate("template.html",
 
 server <- function(input, output, session) {
   
-  pointsAdded <- reactiveValues(clicked = FALSE)
-  
   url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
   url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
   url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+  
+  # create static part of the map
+  
+  output$eqMap <- renderLeaflet({
+    filteredEqsf <- eqsf })
+  
+  
+  
+    
+  
+  
   
   dataInput <- reactive({
     if (input$dataSelect != "1 Month" & input$dataSelect != "1 Week") {
@@ -56,77 +65,10 @@ server <- function(input, output, session) {
     }
   })
   
-  observe({
-    earthquakes <- readOGR(dataInput())
-    eqsf <- st_as_sf(earthquakes)
-    eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
-    eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
-    eqsf_table <- eqsf %>%
-      st_drop_geometry(eqsf) %>%
-      select(mag, place, time_formatted)
-    
-    
-    output$eqMap <- renderLeaflet({
-      filteredEqsf <- eqsf
-      
-      #if (input$dropdown != "all") {
-      #  filteredEqsf <- filteredEqsf %>%
-      #    filter(net == input$dropdown)
-      #}
-      
-      filteredEqsf <- filteredEqsf %>%
-        filter(mag >= input$slider[1] & mag <= input$slider[2])
-      
-      pal <- colorBin(
-        palette = "Spectral",
-        domain = filteredEqsf$mag,
-        reverse = TRUE,
-        bins = 5
-      )
-      
-      leaflet(filteredEqsf) %>%
-        addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
-        addTiles(
-          urlTemplate = "http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw",
-          options = tileOptions(
-            id = "mapbox/satellite-v9",  # Replace with your desired Mapbox style ID
-            accessToken = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw"  # Replace with your Mapbox access token
-          ),
-          group = "Satellite"
-        ) %>%
-        # addMapboxTiles(style_id = "satellite",
-        #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
-        #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
-        #             username = "tfjackc",
-        #            group = "Satellite") %>%
-        setView(-18.525960, 26.846869, 3) %>%
-        addCircleMarkers(
-          fillColor = ~pal(mag),
-          radius = ~filteredEqsf$mag * 2,
-          stroke = FALSE,
-          color = "black",
-          fillOpacity = 0.6,
-          popup = paste0(
-            "<strong>Title:</strong> ", filteredEqsf$title,
-            "<br><strong>Time:</strong> ", filteredEqsf$time_formatted,
-            "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
-            "<br><strong>MMI:</strong> ", filteredEqsf$mmi,
-            "<br><strong>Sig:</strong> ", filteredEqsf$sig
-          ),
-          group = "vectorData"
-        ) %>%
-        addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
-        addDrawToolbar(editOptions = editToolbarOptions())
-    })  
-    
-    output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
-      initComplete = JS(
-        "function(settings, json) {",
-        "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-        "}")
-    ))
+#-----------------------
   
   
+
   # Start of Drawing
   observeEvent(input$eqMap_draw_start, {
     print("Start of drawing")
@@ -198,7 +140,7 @@ server <- function(input, output, session) {
       }
     }
   })
-  })
+  
 }
 
 shinyApp(ui, server)
