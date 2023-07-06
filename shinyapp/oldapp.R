@@ -14,65 +14,58 @@ library(geojsonsf)
 library(geojsonio)
 library(dbscan)
 library(factoextra)
-#library(shinycssloaders)
 
+url <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
+earthquakes <- readOGR(url)
+eqsf <- st_as_sf(earthquakes)
+eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
+eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
+eqsf_table <- eqsf %>%
+  st_drop_geometry(eqsf) %>%
+  select(mag, place, time_formatted)
 
-ui <- htmlTemplate("template.html",
-                   map = leafletOutput("eqMap", height="100%"),
-                   timeTable = dataTableOutput("timeTable", height="400px"),
-                   dbplot = plotOutput("dbscan_plot"),
-                   slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
-                  #dropdown = selectInput("dropdown",
-                   #                       h4("Select the location source"),
-                    #                      choices = c(
-                     #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-                      #                      "pt", "se", "us", "uu", "uw"
-                       #                   ),
-                        #                  selected = "all"),
-                   dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                            choices = c("1 Month", "1 Week", "1 Day"),
-                                            selected = "1 Month")
+ui <- fluidPage(
+  titlePanel("USGS Earthquakes"),
+  fluidRow(
+    column(
+      width = 2,
+      sliderInput("slider", h4("Select the magnitude"), 2, 9, 2),
+      selectInput(
+        "dropdown",
+        h4("Select the location source"),
+        choices = c(
+          "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
+          "pt", "se", "us", "uu", "uw"
+        ),
+        selected = "all"
+      ),
+      #textInput("text", label = h3("Text input"), value = "Enter text..."),
+      
+      #hr(),
+      #fluidRow(column(3, verbatimTextOutput("value")))
+      #shiny::actionButton("clearPoints", "Clear Points")
+    ),
+    column(width = 10,
+           leafletOutput("eqMap", height = "600px")
+    )
+  ),
+  DT::dataTableOutput("timeTable"),
+  plotOutput("dbscan_plot", height="600px", width="600px")
 )
 
-
 server <- function(input, output, session) {
-  
   pointsAdded <- reactiveValues(clicked = FALSE)
-  
-  url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
-  url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
-  url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
-  
-  dataInput <- reactive({
-    if (input$dataSelect != "1 Month" & input$dataSelect != "1 Week") {
-      url_day
-    } else if (input$dataSelect != "1 Month" & input$dataSelect != "1 Day") {
-      url_week
-    } else if (input$dataSelect != "1 Week" & input$dataSelect != "1 Day") {
-      url_month
-    }
-  })
-  
-  observe({
-    earthquakes <- readOGR(dataInput())
-    eqsf <- st_as_sf(earthquakes)
-    eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
-    eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
-    eqsf_table <- eqsf %>%
-      st_drop_geometry(eqsf) %>%
-      select(mag, place, time_formatted)
-
   
   output$eqMap <- renderLeaflet({
     filteredEqsf <- eqsf
     
-    #if (input$dropdown != "all") {
-    #  filteredEqsf <- filteredEqsf %>%
-    #    filter(net == input$dropdown)
-    #}
+    if (input$dropdown != "all") {
+      filteredEqsf <- filteredEqsf %>%
+        filter(net == input$dropdown)
+    }
     
     filteredEqsf <- filteredEqsf %>%
-      filter(mag >= input$slider[1] & mag <= input$slider[2])
+      filter(mag > input$slider)
     
     pal <- colorBin(
       palette = "Spectral",
@@ -82,9 +75,9 @@ server <- function(input, output, session) {
     )
     
     leaflet(filteredEqsf) %>%
-      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
-      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain", options = tileOptions(noWrap = FALSE)) %>% # add esri tiles
-      setView(-18.525960, 26.846869, 3) %>%
+      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter") %>% # add CARTO tiles
+      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain") %>% # add esri tiles
+      setView(-117.841293, 46.195042, 3) %>%
       addCircleMarkers(
         fillColor = ~pal(mag),
         radius = ~filteredEqsf$mag * 2,
@@ -102,7 +95,7 @@ server <- function(input, output, session) {
       ) %>%
       addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
       addDrawToolbar(editOptions = editToolbarOptions())
-  })  })
+  })
   
   output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
     initComplete = JS(
@@ -183,8 +176,8 @@ server <- function(input, output, session) {
       }
     }
   })
-
 }
+
 
 shinyApp(ui, server)
 

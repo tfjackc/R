@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -13,18 +14,64 @@ html, body {
 }
 
 .container {
-  position: absolute;
+  position: fixed;
   top: 0;
-  right: 0;
+  left: 120px;
+  display: flex;
+  width: 320px;
+  margin-top: 12px;
+  justify-content: center;
+  align-items: center;
   background-color: rgba(211, 211, 211, 0.9);
+  border-radius: 5px;
   z-index: 9999; /* Ensure the container is above other elements */
 }
 
-.content {
-  display: none; /* Initially hide the content div */
+
+.container .content {
+  display: none;
 }
 
-#timeTable {
-position: absolute;
-bottom: 0px;
+#filter {
+  position: fixed;
+  top: 0;
+  left: 50px;
+  height: 40px;
+  width: 40px;
+  margin-top: 12px;
+  margin-left: 10px;
+  border-radius: 5px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.accordion {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
+
+.accordion-item {
+  margin-bottom: 14px;
+}
+
+.accordion-button {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.accordion-button:hover {
+  background-color: #f8f9fa;
+}
+
+.accordion-body {
+  padding: 10px;
 }
