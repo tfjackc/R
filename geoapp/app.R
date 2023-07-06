@@ -19,16 +19,16 @@ library(factoextra)
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
-                   timeTable = dataTableOutput("timeTable", height="400px"),
+                   timeTable = dataTableOutput("timeTable"),
                    dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
-                  #dropdown = selectInput("dropdown",
+                   #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
-                    #                      choices = c(
-                     #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-                      #                      "pt", "se", "us", "uu", "uw"
-                       #                   ),
-                        #                  selected = "all"),
+                   #                      choices = c(
+                   #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
+                   #                      "pt", "se", "us", "uu", "uw"
+                   #                   ),
+                   #                  selected = "all"),
                    dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                             choices = c("1 Month", "1 Week", "1 Day"),
                                             selected = "1 Month")
@@ -61,48 +61,48 @@ server <- function(input, output, session) {
     eqsf_table <- eqsf %>%
       st_drop_geometry(eqsf) %>%
       select(mag, place, time_formatted)
-
-  
-  output$eqMap <- renderLeaflet({
-    filteredEqsf <- eqsf
     
-    #if (input$dropdown != "all") {
-    #  filteredEqsf <- filteredEqsf %>%
-    #    filter(net == input$dropdown)
-    #}
     
-    filteredEqsf <- filteredEqsf %>%
-      filter(mag >= input$slider[1] & mag <= input$slider[2])
-    
-    pal <- colorBin(
-      palette = "Spectral",
-      domain = filteredEqsf$mag,
-      reverse = TRUE,
-      bins = 5
-    )
-    
-    leaflet(filteredEqsf) %>%
-      addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
-      addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain", options = tileOptions(noWrap = FALSE)) %>% # add esri tiles
-      setView(-18.525960, 26.846869, 3) %>%
-      addCircleMarkers(
-        fillColor = ~pal(mag),
-        radius = ~filteredEqsf$mag * 2,
-        stroke = FALSE,
-        color = "black",
-        fillOpacity = 0.6,
-        popup = paste0(
-          "<strong>Title:</strong> ", filteredEqsf$title,
-          "<br><strong>Time:</strong> ", filteredEqsf$time_formatted,
-          "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
-          "<br><strong>MMI:</strong> ", filteredEqsf$mmi,
-          "<br><strong>Sig:</strong> ", filteredEqsf$sig
-        ),
-        group = "vectorData"
-      ) %>%
-      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
-      addDrawToolbar(editOptions = editToolbarOptions())
-  })  })
+    output$eqMap <- renderLeaflet({
+      filteredEqsf <- eqsf
+      
+      #if (input$dropdown != "all") {
+      #  filteredEqsf <- filteredEqsf %>%
+      #    filter(net == input$dropdown)
+      #}
+      
+      filteredEqsf <- filteredEqsf %>%
+        filter(mag >= input$slider[1] & mag <= input$slider[2])
+      
+      pal <- colorBin(
+        palette = "Spectral",
+        domain = filteredEqsf$mag,
+        reverse = TRUE,
+        bins = 5
+      )
+      
+      leaflet(filteredEqsf) %>%
+        addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
+        addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain", options = tileOptions(noWrap = FALSE)) %>% # add esri tiles
+        setView(-18.525960, 26.846869, 3) %>%
+        addCircleMarkers(
+          fillColor = ~pal(mag),
+          radius = ~filteredEqsf$mag * 2,
+          stroke = FALSE,
+          color = "black",
+          fillOpacity = 0.6,
+          popup = paste0(
+            "<strong>Title:</strong> ", filteredEqsf$title,
+            "<br><strong>Time:</strong> ", filteredEqsf$time_formatted,
+            "<br><strong>Magnitude:</strong> ", filteredEqsf$mag,
+            "<br><strong>MMI:</strong> ", filteredEqsf$mmi,
+            "<br><strong>Sig:</strong> ", filteredEqsf$sig
+          ),
+          group = "vectorData"
+        ) %>%
+        addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
+        addDrawToolbar(editOptions = editToolbarOptions())
+    })  })
   
   output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
     initComplete = JS(
@@ -183,8 +183,7 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
 }
 
 shinyApp(ui, server)
-
