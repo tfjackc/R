@@ -16,7 +16,7 @@ body {
 .container {
   position: fixed;
   top: 0;
-  left: 120px;
+  left: 160px;
   display: flex;
   width: 320px;
   margin-top: 12px;
@@ -37,7 +37,7 @@ body {
   top: 0;
   left: 50px;
   height: 40px;
-  width: 40px;
+  width: 80px;
   margin-top: 12px;
   margin-left: 10px;
   border-radius: 5px;
