@@ -14,6 +14,9 @@ library(geojsonsf)
 library(geojsonio)
 library(dbscan)
 library(factoextra)
+library(mapboxapi)
+
+        
 #library(shinycssloaders)
 
 
@@ -83,7 +86,19 @@ server <- function(input, output, session) {
       
       leaflet(filteredEqsf) %>%
         addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
-        addProviderTiles(providers$Esri.WorldTerrain, group = "Terrain", options = tileOptions(noWrap = FALSE)) %>% # add esri tiles
+        addTiles(
+          urlTemplate = "http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw",
+          options = tileOptions(
+            id = "mapbox/satellite-v9",  # Replace with your desired Mapbox style ID
+            accessToken = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw"  # Replace with your Mapbox access token
+          ),
+          group = "Satellite"
+        ) %>%
+       # addMapboxTiles(style_id = "satellite",
+        #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
+         #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
+          #             username = "tfjackc",
+           #            group = "Satellite") %>%
         setView(-18.525960, 26.846869, 3) %>%
         addCircleMarkers(
           fillColor = ~pal(mag),
@@ -100,7 +115,7 @@ server <- function(input, output, session) {
           ),
           group = "vectorData"
         ) %>%
-        addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
+        addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
         addDrawToolbar(editOptions = editToolbarOptions())
     })  
   
