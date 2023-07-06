@@ -102,7 +102,7 @@ server <- function(input, output, session) {
         ) %>%
         addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Terrain")) %>%
         addDrawToolbar(editOptions = editToolbarOptions())
-    })  })
+    })  
   
   output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
     initComplete = JS(
@@ -110,7 +110,7 @@ server <- function(input, output, session) {
       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
       "}")
   ))
-  
+  })
   
   # Start of Drawing
   observeEvent(input$eqMap_draw_start, {
