@@ -93,7 +93,7 @@ server <- function(input, output, session) {
       bins = 5
     )
     
-    list(filteredData = filteredData, pal = pal, eqsf_table = eqsf_table)
+    list(filteredData = filteredData, pal = pal, eqsf_table = eqsf_table, eqsf = eqsf)
   })
   
     
@@ -129,6 +129,83 @@ server <- function(input, output, session) {
         "}")
     ))
   })
+  
+  
+  # Start of Drawing
+  observeEvent(input$eqMap_draw_start, {
+    print("Start of drawing")
+    print(input$leafmap_draw_start)
+  })
+  
+  # Stop of Drawing
+  observeEvent(input$eqMap_draw_stop, {
+    print("Stopped drawing")
+    print(input$leafmap_draw_stop)
+  })
+  
+  # New Feature
+  observeEvent(input$eqMap_draw_new_feature, {
+    print("New Feature")
+    print(input$eqMap_draw_new_feature)
+  })
+  
+  # Edited Features
+  observeEvent(input$eqMap_draw_edited_features, {
+    print("Edited Features")
+    print(input$eqMap_draw_edited_features)
+  })
+  
+  # Deleted features
+  observeEvent(input$eqMap_draw_deleted_features, {
+    print("Deleted Features")
+    print(input$eqMap_draw_deleted_features)
+  })
+  
+  # We also listen for draw_all_features which is called anytime
+  # features are created/edited/deleted from the map
+  observeEvent(input$eqMap_draw_all_features, {
+    
+    eqsf <- filteredEqsf()$eqsf
+    
+    print("All Features")
+    print(input$eqMap_draw_all_features)
+    
+    if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
+      
+      
+      numFeatures <- length(input$eqMap_draw_all_features$features)
+      lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
+      lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
+      radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
+      print(paste0("geom coordinates: ", lat, ", ", lng))
+      
+      if (!is.null(radius)) {
+        print(paste("radius: ", round(radius, digits = 2), "m"))
+        
+        # Convert radius from meters to decimal degrees
+        new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
+        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979)
+        
+        circle_geom <- st_buffer(new_geom, radius)
+        circle_pts <- st_intersection(eqsf, circle_geom)
+        df <- st_as_sf(circle_pts)
+        df_coords <- data.frame(st_coordinates(df))
+        locs = dplyr::select(df_coords,X,Y)
+        locs.scaled = scale(locs,center = T,scale = T)
+        
+        print(locs.scaled)
+        db = dbscan::dbscan(locs.scaled,eps=0.45,minPts = 5)
+        #db
+        
+        #View(df)
+        output$dbscan_plot <- renderPlot({
+          factoextra::fviz_cluster(db,locs.scaled,stand = F,ellipse = T,geom = "point")
+        })
+        
+      }
+    }
+  })
+  
   
   
 }
