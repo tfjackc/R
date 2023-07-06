@@ -51,6 +51,7 @@ body {
 
 #content-dbscan {
   display: block;
+  border-radius: 5px;
 }
 
 #filter {
@@ -83,6 +84,10 @@ body {
   align-items: center;
 }
 
+#dbscan_plot {
+  border-radius: 5px;
+}
+
 .accordion {
   position: fixed;
   bottom: 0;
@@ -110,4 +115,8 @@ body {
 .accordion-body {
   padding: 10px;
   background-color: transparent;
+}
+
+img {
+  border-radius: 5px;
 }
