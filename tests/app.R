@@ -20,7 +20,7 @@ library(mapboxapi)
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
-                  # timeTable = dataTableOutput("timeTable"),
+                   timeTable = dataTableOutput("timeTable"),
                   # dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
@@ -93,7 +93,7 @@ server <- function(input, output, session) {
       bins = 5
     )
     
-    list(filteredData = filteredData, pal = pal)
+    list(filteredData = filteredData, pal = pal, eqsf_table = eqsf_table)
   })
   
     
@@ -120,6 +120,15 @@ server <- function(input, output, session) {
       )
   })
   
+  observe({
+    eqsf_table <- filteredEqsf()$eqsf_table
+    output$timeTable <- DT::renderDataTable(eqsf_table, server = FALSE, options = list(
+      initComplete = JS(
+        "function(settings, json) {",
+        "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
+        "}")
+    ))
+  })
   
   
 }
