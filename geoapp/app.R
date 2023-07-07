@@ -116,14 +116,12 @@ server <- function(input, output, session) {
         popup = paste0(
           "<strong>Title:</strong> ", filteredData$title,
           "<br><strong>Time:</strong> ", format(filteredData$time, "%Y-%m-%d %I:%M:%S %p %Z"),
-          "<br><strong>Magnitude:</strong> ", filteredData$mag,
-          "<br><strong>MMI:</strong> ", filteredData$mmi,
-          "<br><strong>Sig:</strong> ", filteredData$sig
+          "<br><strong>Magnitude:</strong> ", filteredData$mag
         ),
         group = "vectorData"
       ) %>%
       clearControls() %>%
-      addLegend("topright", pal = pal, values = ~filteredData$mag,
+      addLegend("topleft", pal = pal, values = ~filteredData$mag,
                 title = "Magnitude",
                 opacity = 1)
   })
@@ -219,11 +217,7 @@ server <- function(input, output, session) {
       }
     }
   })
-    
-    
-  
-  
-  
+
 }
 
 

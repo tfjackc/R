@@ -21,12 +21,12 @@ function toggleContent() {
   }
 }
 
-function tc() {
-  var x = document.getElementById("container-dbscan");
-  if (x.style.display !== 'block') {
-    x.style.display = "block";
+function dbscanWindow() {
+  var db = document.getElementById("container-dbscan");
+  if (db.style.display !== 'block') {
+    db.style.display = "block";
   } else {
-    x.style.display = "none";
+    db.style.display = "none";
   }
 }
 
@@ -54,7 +54,7 @@ function tc() {
   <span class="ms-1 d-none d-sm-inline"><h5>Filters</h5></span>
 </button>
 
-<button id="plotButton" onclick="tc()">
+<button id="plotButton" onclick="dbscanWindow()">
   <h4><i class="bi bi-upc-scan align-middle"></i></h4>
   <span class="ms-1 d-none d-sm-inline"><h5>DBSCAN</h5></span>
 </button>
