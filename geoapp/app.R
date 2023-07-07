@@ -15,8 +15,13 @@ library(geojsonio)
 library(dbscan)
 library(factoextra)
 library(mapboxapi)
+library(RColorBrewer)
 
-
+url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
+url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
+url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+#color_list <- c("Reds", "Spectral", "Pastel1", "PuRd", "PuBuGn")
+color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
@@ -32,7 +37,9 @@ ui <- htmlTemplate("template.html",
                    #                  selected = "all"),
                    dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                             choices = c("1 Month", "1 Week", "1 Day"),
-                                            selected = "1 Month")
+                                            selected = "1 Month"),
+                   color_choice = selectInput("color_choice", "Symbology", color_list, selected = "RdBu"),
+                   checkbox = checkboxInput("legend", "Show legend", TRUE)
 )
 
 
@@ -49,6 +56,7 @@ server <- function(input, output, session) {
         ),
         group = "Satellite"
       ) %>%
+      #addTiles(group = "OSM (default)") %>%
       # addMapboxTiles(style_id = "satellite",
       #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
       #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
@@ -56,13 +64,8 @@ server <- function(input, output, session) {
       #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
       addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
-      addDrawToolbar(editOptions = editToolbarOptions())
+      addDrawToolbar(editOptions = editToolbarOptions()) 
   })
-  
-  
-  url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
-  url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
-  url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
   
   dataInput <- reactive({
     if (input$dataSelect != "1 Month" & input$dataSelect != "1 Week") {
@@ -87,7 +90,7 @@ server <- function(input, output, session) {
       filter(mag >= input$slider[1] & mag <= input$slider[2])
     
     pal <- colorBin(
-      palette = "Spectral",
+      palette = input$color_choice,
       domain = filteredData$mag,
       reverse = TRUE,
       bins = 5
@@ -105,9 +108,10 @@ server <- function(input, output, session) {
       clearMarkers() %>%
       addCircleMarkers(
         fillColor = ~pal(mag),
-        radius = ~mag * 2,
+        radius = ~(mag*2), 
+        weight = 1,
         stroke = FALSE,
-        color = "black",
+        color = "#777777",
         fillOpacity = 0.6,
         popup = paste0(
           "<strong>Title:</strong> ", filteredData$title,
@@ -117,7 +121,11 @@ server <- function(input, output, session) {
           "<br><strong>Sig:</strong> ", filteredData$sig
         ),
         group = "vectorData"
-      )
+      ) %>%
+      clearControls() %>%
+      addLegend("topright", pal = pal, values = ~filteredData$mag,
+                title = "Magnitude",
+                opacity = 1)
   })
   
   observe({
