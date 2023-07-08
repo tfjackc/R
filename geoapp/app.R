@@ -56,14 +56,14 @@ server <- function(input, output, session) {
         ),
         group = "Satellite"
       ) %>%
-      #addTiles(group = "OSM (default)") %>%
+      addTiles(group = "OSM") %>%
       # addMapboxTiles(style_id = "satellite",
       #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
       #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
       #             username = "tfjackc",
       #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
-      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite")) %>%
+      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite", "OSM")) %>%
       addDrawToolbar(editOptions = editToolbarOptions()) 
   })
   
