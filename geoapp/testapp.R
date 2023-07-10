@@ -153,10 +153,10 @@ server <- function(input, output, session) {
   })
   
   # Stop of Drawing
-  observeEvent(input$eqMap_draw_stop, {
-    print("Stopped drawing")
-    print(input$leafmap_draw_stop)
-  })
+ #observeEvent(input$eqMap_draw_stop, {
+#    print("Stopped drawing")
+#    print(input$leafmap_draw_stop)
+#  })
   
   # New Feature
   observeEvent(input$eqMap_draw_new_feature, {
@@ -178,14 +178,15 @@ server <- function(input, output, session) {
   
   # We also listen for draw_all_features which is called anytime
   # features are created/edited/deleted from the map
-  observeEvent(input$eqMap_draw_all_features, {
+  circle_geom <- reactive({
+    observeEvent(input$eqMap_draw_all_features, {
     
     eqsf <- filteredEqsf()$eqsf
     
     print("All Features")
     print(input$eqMap_draw_all_features)
     
-    if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
+    if (!is.null(input$eqMap_draw_stop) && length(input$eqMap_draw_all_features$features) > 0) {
       
       
       numFeatures <- length(input$eqMap_draw_all_features$features)
@@ -203,13 +204,17 @@ server <- function(input, output, session) {
         new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326) #4979 change before deployment to 4326
         
         print("-------eqsf----------")
-        print(st_crs(eqsf))
+       # print(st_crs(eqsf))
         print("-------new_geom------")
         print(st_crs(new_geom))
         
         
-        circle_geom <- st_buffer(new_geom, radius)
-   
+       return(st_buffer(new_geom, radius))
+      }
+      
+    }
+  })
+  })
         #bbox <- st_bbox(circle_geom)
         #xmin <- as.numeric(bbox["xmin"])
         #ymin <- as.numeric(bbox["ymin"])
@@ -217,14 +222,17 @@ server <- function(input, output, session) {
         #ymax <- as.numeric(bbox["ymax"])
         #list(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
         
-        circle_pts <- st_intersection(eqsf, circle_geom)
-        df <- st_as_sf(circle_pts)
-        df_coords <- data.frame(st_coordinates(df))
-        locs <- dplyr::select(df_coords,X,Y) 
-        db <- dbscan::dbscan(locs,eps=0.45,minPts = 5)
+        circle_pts <- reactive({st_intersection(eqsf, circle_geom)})
+        df <- reactive({st_as_sf(circle_pts)})
+        df_coords <- reactive({data.frame(st_coordinates(df))})
+        locs <- reactive({dplyr::select(df_coords,X,Y)}) 
+        db <- reactive({dbscan::dbscan(locs,eps=0.45,minPts = 5)})
        
       
-        output$dbscan_plot <- renderPlot({
+       
+        
+        
+         output$dbscan_plot <- renderPlot({
           
           
           #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
@@ -244,8 +252,7 @@ server <- function(input, output, session) {
               aes(long, lat, map_id = region)
             ) +
             coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
-          
-          
+        })
           
           #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
 
@@ -262,18 +269,12 @@ server <- function(input, output, session) {
          #cluster_data + 
           #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
           #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") +
-            
-        
-
-        })
-        
-        
-  
+          
       }
-    }
-  })
+    
   
-}
+  
+
 
 
 shinyApp(ui, server)

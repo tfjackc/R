@@ -217,14 +217,7 @@ server <- function(input, output, session) {
         
         
         circle_geom <- st_buffer(new_geom, radius)
-        
-        #bbox <- st_bbox(circle_geom)
-        #xmin <- as.numeric(bbox["xmin"])
-        #ymin <- as.numeric(bbox["ymin"])
-        #xmax <- as.numeric(bbox["xmax"])
-        #ymax <- as.numeric(bbox["ymax"])
-        #list(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
-        
+
         circle_pts <- st_intersection(eqsf, circle_geom)
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))

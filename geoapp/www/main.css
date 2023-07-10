@@ -120,3 +120,8 @@ body {
 img {
   border-radius: 5px;
 }
+
+#DataTables_Table_0_wrapper {
+  max-height: 417px;
+  overflow: auto;
+}
