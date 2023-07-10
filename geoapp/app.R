@@ -72,7 +72,15 @@ server <- function(input, output, session) {
       #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
       addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite", "OSM")) %>%
-      addDrawToolbar(editOptions = editToolbarOptions()) 
+      addDrawToolbar( polylineOptions = FALSE,
+                      polygonOptions = FALSE,
+                      rectangleOptions = FALSE,
+                      circleOptions = TRUE,
+                      markerOptions = FALSE,
+                      circleMarkerOptions = FALSE,
+                      # markerOptions = drawMarkerOptions(markerIcon = myMarkerIcon(2)),
+                      singleFeature = TRUE,
+                      editOptions = editToolbarOptions())
   })
   
   dataInput <- reactive({
