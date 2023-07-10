@@ -17,16 +17,21 @@ library(factoextra)
 library(mapboxapi)
 library(RColorBrewer)
 
+
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
 url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
 #color_list <- c("Reds", "Spectral", "Pastel1", "PuRd", "PuBuGn")
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
+WorldData <- map_data('world')
+wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4979)
+print(st_crs(wdf))
+
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    timeTable = dataTableOutput("timeTable"),
-                   dbplot = leafletOutput("dbscan_plot"),
+                   dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
@@ -183,6 +188,7 @@ server <- function(input, output, session) {
       lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
       lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
       radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
+ 
       print(paste0("geom coordinates: ", lat, ", ", lng))
       
       if (!is.null(radius)) {
@@ -196,34 +202,56 @@ server <- function(input, output, session) {
         print(st_crs(eqsf))
         print("-------new_geom------")
         print(st_crs(new_geom))
-        print("---------------------")
+        
         
         circle_geom <- st_buffer(new_geom, radius)
+   
+        bbox <- st_bbox(circle_geom)
+        xmin <- bbox["xmin"]
+        ymin <- bbox["ymin"]
+        xmax <- bbox["xmax"]
+        ymax <- bbox["ymax"]
+        #list(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+        
         circle_pts <- st_intersection(eqsf, circle_geom)
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))
-        locs = dplyr::select(df_coords,X,Y)
-        locs.scaled = scale(locs,center = T,scale = T)
-        
-        print(locs.scaled)
-        #db = dbscan::dbscan(locs.scaled,eps=0.45,minPts = 5)
-
-        output$dbscan_plot <- renderLeaflet({
-          db <- dbscan(locs, eps = 0.45, minPts = 5)
-          View(db)
+        locs <- dplyr::select(df_coords,X,Y) 
+        db <- dbscan::dbscan(locs,eps=0.45,minPts = 5)
+       
+      
+        output$dbscan_plot <- renderPlot({
+          cluster_data <- factoextra::fviz_cluster(db, locs, stand = FALSE, ellipse = TRUE, geom = "point")
           
-          # Create the initial leaflet map
-          leaflet(data = locs) %>%
-            addTiles() %>%
-            addCircleMarkers(~X, ~Y)
+          cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
+          
+          df_bbox <- sf::st_bbox(cluster_data_sf)
+          print("print bbox---------------")
+          print(df_bbox)
+          
+         #bbox <- st_bbox(circle_geom)
+          #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
+          
+          world_cropped <- st_crop(na.omit(world), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+          #world_inter <- st_intersection(world, cluster_data_sf)
+        
+          #cluster_data +
+          #  geom_sf(
+          #    data = world_cropped,
+          #    color = "black", fill = "lightgray", size = 0.1
+          #  )
+          
+         # cluster_data +
+          ggplot(data = world_cropped) +
+             geom_sf()
         })
         
         
-        
+  
       }
     }
   })
-
+  
 }
 
 
