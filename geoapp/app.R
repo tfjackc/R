@@ -16,6 +16,9 @@ library(dbscan)
 library(factoextra)
 library(mapboxapi)
 library(RColorBrewer)
+library(basemaps)
+library(ggmap)
+
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -23,10 +26,15 @@ url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.ge
 #color_list <- c("Reds", "Spectral", "Pastel1", "PuRd", "PuBuGn")
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
+world <- map_data("world")
+#WorldData <- map_data('world')
+#wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4326)
+#print(st_crs(wdf))
+
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    timeTable = dataTableOutput("timeTable"),
-                   dbplot = leafletOutput("dbscan_plot"),
+                   dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
@@ -80,6 +88,7 @@ server <- function(input, output, session) {
   filteredEqsf <- reactive({
     earthquakes <- read_sf(dataInput())
     eqsf <- st_as_sf(earthquakes)
+    eqsf <- st_transform(eqsf, 4326)
     eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
     eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
     eqsf_table <- eqsf %>%
@@ -183,6 +192,7 @@ server <- function(input, output, session) {
       lng <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[1]
       lat <- input$eqMap_draw_all_features$features[[numFeatures]]$geometry$coordinates[2]
       radius <- input$eqMap_draw_all_features$features[[numFeatures]]$properties$radius
+      
       print(paste0("geom coordinates: ", lat, ", ", lng))
       
       if (!is.null(radius)) {
@@ -190,32 +200,71 @@ server <- function(input, output, session) {
         
         # Convert radius from meters to decimal degrees
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
-        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979) #4979 change before deployment to 4326
+        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326) #4979 change before deployment to 4326
         
         print("-------eqsf----------")
         print(st_crs(eqsf))
         print("-------new_geom------")
         print(st_crs(new_geom))
-        print("---------------------")
+        
         
         circle_geom <- st_buffer(new_geom, radius)
+        
+        #bbox <- st_bbox(circle_geom)
+        #xmin <- as.numeric(bbox["xmin"])
+        #ymin <- as.numeric(bbox["ymin"])
+        #xmax <- as.numeric(bbox["xmax"])
+        #ymax <- as.numeric(bbox["ymax"])
+        #list(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+        
         circle_pts <- st_intersection(eqsf, circle_geom)
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))
-        locs = dplyr::select(df_coords,X,Y)
-        locs.scaled = scale(locs,center = T,scale = T)
+        locs <- dplyr::select(df_coords,X,Y) 
+        db <- dbscan::dbscan(locs,eps=0.45,minPts = 5)
         
-        print(locs.scaled)
-        #db = dbscan::dbscan(locs.scaled,eps=0.45,minPts = 5)
-
-        output$dbscan_plot <- renderLeaflet({
-          db <- dbscan(locs, eps = 0.45, minPts = 5)
-          View(db)
+        
+        output$dbscan_plot <- renderPlot({
           
-          # Create the initial leaflet map
-          leaflet(data = locs) %>%
-            addTiles() %>%
-            addCircleMarkers(~X, ~Y)
+          
+          #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
+          #View(cluster_data_sf)
+          
+          bbox <- st_bbox(circle_geom)
+          ymin <- as.numeric(bbox['ymin'])
+          ymax <- as.numeric(bbox['ymax'])
+          xmax <- as.numeric(bbox['xmax'])
+          xmin <- as.numeric(bbox['xmin'])
+          
+          cluster_data <- factoextra::fviz_cluster(db, locs, stand = FALSE, ellipse = TRUE, geom = "point")
+          
+          cluster_data + 
+            geom_map(
+              data = world, map = world,
+              aes(long, lat, map_id = region)
+            ) +
+            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
+          
+          
+          
+          #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+          
+          #plot(cluster_data)
+          #plot(basemap)
+          
+          #bbox <- st_bbox(circle_geom)
+          #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
+          
+          #world_cropped <- st_crop(na.omit(wdf), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+          #world_inter <- st_intersection(world, cluster_data_sf)
+          
+          #basemap_magick(bbox, map_service = "osm", map_type = "streets")
+          #cluster_data + 
+          #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+          #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") +
+          
+          
+          
         })
         
         
@@ -223,7 +272,7 @@ server <- function(input, output, session) {
       }
     }
   })
-
+  
 }
 
 

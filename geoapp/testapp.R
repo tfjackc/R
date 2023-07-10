@@ -16,6 +16,8 @@ library(dbscan)
 library(factoextra)
 library(mapboxapi)
 library(RColorBrewer)
+library(basemaps)
+library(ggmap)
 
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
@@ -24,9 +26,10 @@ url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.ge
 #color_list <- c("Reds", "Spectral", "Pastel1", "PuRd", "PuBuGn")
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
-WorldData <- map_data('world')
-wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4979)
-print(st_crs(wdf))
+world <- map_data("world")
+#WorldData <- map_data('world')
+#wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4326)
+#print(st_crs(wdf))
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
@@ -85,6 +88,7 @@ server <- function(input, output, session) {
   filteredEqsf <- reactive({
     earthquakes <- read_sf(dataInput())
     eqsf <- st_as_sf(earthquakes)
+    eqsf <- st_transform(eqsf, 4326)
     eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
     eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
     eqsf_table <- eqsf %>%
@@ -196,7 +200,7 @@ server <- function(input, output, session) {
         
         # Convert radius from meters to decimal degrees
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
-        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4979) #4979 change before deployment to 4326
+        new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326) #4979 change before deployment to 4326
         
         print("-------eqsf----------")
         print(st_crs(eqsf))
@@ -206,11 +210,11 @@ server <- function(input, output, session) {
         
         circle_geom <- st_buffer(new_geom, radius)
    
-        bbox <- st_bbox(circle_geom)
-        xmin <- bbox["xmin"]
-        ymin <- bbox["ymin"]
-        xmax <- bbox["xmax"]
-        ymax <- bbox["ymax"]
+        #bbox <- st_bbox(circle_geom)
+        #xmin <- as.numeric(bbox["xmin"])
+        #ymin <- as.numeric(bbox["ymin"])
+        #xmax <- as.numeric(bbox["xmax"])
+        #ymax <- as.numeric(bbox["ymax"])
         #list(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
         
         circle_pts <- st_intersection(eqsf, circle_geom)
@@ -221,29 +225,46 @@ server <- function(input, output, session) {
        
       
         output$dbscan_plot <- renderPlot({
+          
+          
+          #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
+          #View(cluster_data_sf)
+          
+          bbox <- st_bbox(circle_geom)
+          ymin <- as.numeric(bbox['ymin'])
+          ymax <- as.numeric(bbox['ymax'])
+          xmax <- as.numeric(bbox['xmax'])
+          xmin <- as.numeric(bbox['xmin'])
+          
           cluster_data <- factoextra::fviz_cluster(db, locs, stand = FALSE, ellipse = TRUE, geom = "point")
           
-          cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
+          cluster_data + 
+            geom_map(
+              data = world, map = world,
+              aes(long, lat, map_id = region)
+            ) +
+            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
           
-          df_bbox <- sf::st_bbox(cluster_data_sf)
-          print("print bbox---------------")
-          print(df_bbox)
           
+          
+          #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+
+          #plot(cluster_data)
+          #plot(basemap)
+        
          #bbox <- st_bbox(circle_geom)
           #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
           
-          world_cropped <- st_crop(na.omit(world), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+          #world_cropped <- st_crop(na.omit(wdf), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
           #world_inter <- st_intersection(world, cluster_data_sf)
         
-          #cluster_data +
-          #  geom_sf(
-          #    data = world_cropped,
-          #    color = "black", fill = "lightgray", size = 0.1
-          #  )
-          
-         # cluster_data +
-          ggplot(data = world_cropped) +
-             geom_sf()
+          #basemap_magick(bbox, map_service = "osm", map_type = "streets")
+         #cluster_data + 
+          #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+          #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") +
+            
+        
+
         })
         
         
