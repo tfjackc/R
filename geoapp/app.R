@@ -225,8 +225,7 @@ server <- function(input, output, session) {
         
         
         output$dbscan_plot <- renderPlot({
-          
-          
+        
           #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
           #View(cluster_data_sf)
           
@@ -241,12 +240,13 @@ server <- function(input, output, session) {
           cluster_data + 
             geom_map(
               data = world, map = world,
-              aes(long, lat, map_id = region)
+              aes(long, lat, map_id = region),
+              color = "black", fill = NA
+              
             ) +
-            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
-          
-          
-          
+            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax)) +
+            theme_void()
+        })
           #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
           
           #plot(cluster_data)
@@ -261,14 +261,7 @@ server <- function(input, output, session) {
           #basemap_magick(bbox, map_service = "osm", map_type = "streets")
           #cluster_data + 
           #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
-          #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") +
-          
-          
-          
-        })
-        
-        
-        
+          #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") 
       }
     }
   })
