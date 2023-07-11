@@ -39,6 +39,11 @@ function toggleContent() {
     {{ dataSelect }}
     {{ slider }}
     {{ color_choice }}
+    <hr />
+    <h4>DBSCAN Inputs</h4>
+    <br />
+    {{ eps_input }}
+    {{ minpts }}
   </div>
 </div>
 
@@ -63,7 +68,7 @@ function toggleContent() {
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingOne">
       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
-        Data
+        <h5>Table & DBSCAN Plot</h5>
       </button>
     </h2>
     <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne">

@@ -49,8 +49,12 @@ ui <- htmlTemplate("template.html",
                    dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                             choices = c("1 Month", "1 Week", "1 Day"),
                                             selected = "1 Month"),
-                   color_choice = selectInput("color_choice", "Symbology", color_list, selected = "RdBu"),
-                   checkbox = checkboxInput("legend", "Show legend", TRUE)
+                   color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
+                   checkbox = checkboxInput("legend", "Show legend", TRUE),
+                   eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                   minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
+                  
+                   
 )
 
 
@@ -225,7 +229,7 @@ server <- function(input, output, session) {
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))
         locs <- dplyr::select(df_coords,X,Y) 
-        db <- dbscan::dbscan(locs,eps=0.45,minPts = 5)
+        db <- dbscan::dbscan(locs,eps=input$eps_input,minPts =input$minpts_input)
         
         
         output$dbscan_plot <- renderPlot({
