@@ -33,8 +33,11 @@ world <- map_data("world")
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
-                   timeTable = dataTableOutput("timeTable"),
-                   dbplot = plotOutput("dbscan_plot"),
+                   dbplot =  tabsetPanel(type = "tabs",
+                   tabPanel("DataTable", dataTableOutput("timeTable")),
+                   tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                   #timeTable = dataTableOutput("timeTable"),
+                   #dbplot = plotOutput("dbscan_plot"),
                    slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
@@ -245,8 +248,7 @@ server <- function(input, output, session) {
               color = "black", fill = NA
               
             ) +
-            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax)) +
-            theme_void()
+            coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
         })
           #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
           

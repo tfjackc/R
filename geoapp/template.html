@@ -21,14 +21,14 @@ function toggleContent() {
   }
 }
 
-function dbscanWindow() {
-  var db = document.getElementById("container-dbscan");
-  if (db.style.display !== 'block') {
-    db.style.display = "block";
-  } else {
-    db.style.display = "none";
-  }
-}
+// function dbscanWindow() {
+//   var db = document.querySelector(".card .card-body");
+//   if (db.style.display !== 'block') {
+//     db.style.display = "block";
+//   } else {
+//     db.style.display = "none";
+//   }
+// }
 
 
 </script>
@@ -42,11 +42,11 @@ function dbscanWindow() {
   </div>
 </div>
 
-<div id="container-dbscan">
-  <div id="content-dbscan">
-     {{ dbplot }}
-  </div>
-</div>
+<!--<div class="card">-->
+<!--  <div class="card-body">-->
+<!--    {{ dbplot }}-->
+<!--  </div>-->
+<!--</div>-->
 
 
 <button id="filter" onclick="toggleContent()">
@@ -54,21 +54,21 @@ function dbscanWindow() {
   <span class="ms-1 d-none d-sm-inline"><h5>Filters</h5></span>
 </button>
 
-<button id="plotButton" onclick="dbscanWindow()">
-  <h4><i class="bi bi-upc-scan align-middle"></i></h4>
-  <span class="ms-1 d-none d-sm-inline"><h5>DBSCAN</h5></span>
-</button>
+<!--<button id="plotButton" onclick="dbscanWindow()">-->
+<!--  <h4><i class="bi bi-upc-scan align-middle"></i></h4>-->
+<!--  <span class="ms-1 d-none d-sm-inline"><h5>DBSCAN</h5></span>-->
+<!--</button>-->
 
 <div class="accordion" style="bottom: 0;">
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingOne">
       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne">
-        DataTable
+        Data
       </button>
     </h2>
     <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne">
       <div class="accordion-body">
-        {{ timeTable }}
+        {{ dbplot }}
       </div>
     </div>
   </div>
