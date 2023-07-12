@@ -145,48 +145,17 @@ server <- function(input, output, session) {
     ))
   })
   
-  
-  # Start of Drawing
-  observeEvent(input$eqMap_draw_start, {
-    print("Start of drawing")
-    print(input$leafmap_draw_start)
-  })
-  
-  # Stop of Drawing
- #observeEvent(input$eqMap_draw_stop, {
-#    print("Stopped drawing")
-#    print(input$leafmap_draw_stop)
-#  })
-  
-  # New Feature
-  observeEvent(input$eqMap_draw_new_feature, {
-    print("New Feature")
-    print(input$eqMap_draw_new_feature)
-  })
-  
-  # Edited Features
-  observeEvent(input$eqMap_draw_edited_features, {
-    print("Edited Features")
-    print(input$eqMap_draw_edited_features)
-  })
-  
-  # Deleted features
-  observeEvent(input$eqMap_draw_deleted_features, {
-    print("Deleted Features")
-    print(input$eqMap_draw_deleted_features)
-  })
-  
   # We also listen for draw_all_features which is called anytime
   # features are created/edited/deleted from the map
-  circle_geom <- reactive({
-    observeEvent(input$eqMap_draw_all_features, {
+   
+    circle_geom <- observeEvent(input$eqMap_draw_all_features, {
     
     eqsf <- filteredEqsf()$eqsf
     
     print("All Features")
     print(input$eqMap_draw_all_features)
     
-    if (!is.null(input$eqMap_draw_stop) && length(input$eqMap_draw_all_features$features) > 0) {
+    if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
       
       
       numFeatures <- length(input$eqMap_draw_all_features$features)
@@ -209,12 +178,14 @@ server <- function(input, output, session) {
         print(st_crs(new_geom))
         
         
-       return(st_buffer(new_geom, radius))
+       circle_geom <- st_buffer(new_geom, radius)
+       return (circle_geom)
       }
-      
     }
   })
-  })
+
+  
+  print(circle_geom)
         #bbox <- st_bbox(circle_geom)
         #xmin <- as.numeric(bbox["xmin"])
         #ymin <- as.numeric(bbox["ymin"])
