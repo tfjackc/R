@@ -146,9 +146,9 @@ server <- function(input, output, session) {
         fillColor = ~pal(mag),
         radius = ~(mag*2), 
         weight = 1,
-        stroke = FALSE,
-        color = "#777777",
-        fillOpacity = 0.6,
+        stroke = TRUE,
+        color = "black",
+        fillOpacity = 1,
         popup = paste0(
           "<strong>Title:</strong> ", filteredData$title,
           "<br><strong>Time:</strong> ", format(filteredData$time, "%Y-%m-%d %I:%M:%S %p %Z"),
