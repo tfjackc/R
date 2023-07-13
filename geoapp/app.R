@@ -35,7 +35,8 @@ ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    dbplot =  tabsetPanel(type = "tabs",
                                          tabPanel("DataTable", dataTableOutput("timeTable")),
-                                         tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                                         #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                   ),
                    filters = tabsetPanel(type = "tabs",
                                          tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                                                                choices = c("1 Month", "1 Week", "1 Day"),
@@ -44,7 +45,8 @@ ui <- htmlTemplate("template.html",
                                                                    selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
                                          tabPanel("DBSCAN Parameters", numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
                                                                        numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1),
-                                                                       ))
+                                                                       )),
+                   renderdbscan = uiOutput("dbovermap")
                    #timeTable = dataTableOutput("timeTable"),
                    #dbplot = plotOutput("dbscan_plot"),
                    #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
@@ -90,7 +92,7 @@ server <- function(input, output, session) {
       #             username = "tfjackc",
       #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
-      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("OSM", "DarkMatter", "Satellite"git )) %>%
+      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("OSM", "DarkMatter", "Satellite")) %>%
       addDrawToolbar( polylineOptions = FALSE,
                       polygonOptions = FALSE,
                       rectangleOptions = FALSE,
@@ -172,7 +174,6 @@ server <- function(input, output, session) {
     ))
   })
   
-  
   # Start of Drawing
   observeEvent(input$eqMap_draw_start, {
     print("Start of drawing")
@@ -209,29 +210,40 @@ server <- function(input, output, session) {
     
     runDBSCAN <- function(circle_geom, db, xmin, xmax, ymin, ymax, locs) { 
       
+      eps_input <- reactive(input$eps_input)
+      minpts_input <- reactive(input$minpts_input)
+      
+      # Calculate clustering result and cluster visualization
+      db_result <- reactive({
+        dbscan::dbscan(locs, eps = eps_input(), minPts = minpts_input())
+      })
+      
+      cluster_data <- reactive({
+        factoextra::fviz_cluster(db_result(), locs, stand = FALSE, ellipse = TRUE, geom = "point")
+      })
+      
+      # Render dynamic UI
+      output$dbovermap <- renderUI({
+        plotOutput("dbscan_plot")
+      })
+      
+      # Render plot
       output$dbscan_plot <- renderPlot({
-        
-        #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
-        #View(cluster_data_sf)
-        #isolate({
         bbox <- st_bbox(circle_geom)
         ymin <- as.numeric(bbox['ymin'])
         ymax <- as.numeric(bbox['ymax'])
         xmax <- as.numeric(bbox['xmax'])
         xmin <- as.numeric(bbox['xmin'])
         
-        db <- dbscan::dbscan(locs,eps=input$eps_input,minPts=input$minpts_input)
+        cluster_data_plot <- cluster_data()
         
-        cluster_data <- factoextra::fviz_cluster(db, locs, stand = FALSE, ellipse = TRUE, geom = "point")
-        
-        cluster_data + 
+        cluster_data_plot +
           geom_map(
             data = world, map = world,
             aes(long, lat, map_id = region),
             color = "black", fill = NA
           ) +
           coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
-        #})
       })
     }
     
@@ -269,8 +281,6 @@ server <- function(input, output, session) {
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))
         locs <- dplyr::select(df_coords,X,Y) 
-        
-        
         
         runDBSCAN(circle_geom=circle_geom, locs=locs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
         
