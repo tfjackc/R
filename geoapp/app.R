@@ -34,11 +34,19 @@ world <- map_data("world")
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
                    dbplot =  tabsetPanel(type = "tabs",
-                   tabPanel("DataTable", dataTableOutput("timeTable")),
-                   tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                                         tabPanel("DataTable", dataTableOutput("timeTable")),
+                                         tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                   filters = tabsetPanel(type = "tabs",
+                                         tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                                                                               choices = c("1 Month", "1 Week", "1 Day"),
+                                                                               selected = "1 Month"),
+                                                                   sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),  
+                                                                   selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
+                                         tabPanel("DBSCAN Parameters", numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                                                                       numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1))),
                    #timeTable = dataTableOutput("timeTable"),
                    #dbplot = plotOutput("dbscan_plot"),
-                   slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
+                   #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
                    #                       h4("Select the location source"),
                    #                      choices = c(
@@ -46,14 +54,14 @@ ui <- htmlTemplate("template.html",
                    #                      "pt", "se", "us", "uu", "uw"
                    #                   ),
                    #                  selected = "all"),
-                   dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                            choices = c("1 Month", "1 Week", "1 Day"),
-                                            selected = "1 Month"),
-                   color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
-                   checkbox = checkboxInput("legend", "Show legend", TRUE),
-                   eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                   minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
-                  
+                   #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                                            #choices = c("1 Month", "1 Week", "1 Day"),
+                                            #selected = "1 Month"),
+                   #color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
+                   checkbox = checkboxInput("legend", "Show legend", TRUE)
+                   #eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                   #minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
+                   
                    
 )
 
@@ -222,18 +230,18 @@ server <- function(input, output, session) {
         print("-------new_geom------")
         print(st_crs(new_geom))
         
-        
+    
         circle_geom <- st_buffer(new_geom, radius)
-
+        
         circle_pts <- st_intersection(eqsf, circle_geom)
         df <- st_as_sf(circle_pts)
         df_coords <- data.frame(st_coordinates(df))
         locs <- dplyr::select(df_coords,X,Y) 
-        db <- dbscan::dbscan(locs,eps=input$eps_input,minPts =input$minpts_input)
+        db <- dbscan::dbscan(locs,eps=input$eps_input,minPts=input$minpts_input)
         
         
         output$dbscan_plot <- renderPlot({
-        
+          
           #cluster_data_sf <- st_as_sf(locs, coords = c("X", "Y"))
           #View(cluster_data_sf)
           
@@ -253,21 +261,21 @@ server <- function(input, output, session) {
             ) +
             coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
         })
-          #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
-          
-          #plot(cluster_data)
-          #plot(basemap)
-          
-          #bbox <- st_bbox(circle_geom)
-          #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
-          
-          #world_cropped <- st_crop(na.omit(wdf), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
-          #world_inter <- st_intersection(world, cluster_data_sf)
-          
-          #basemap_magick(bbox, map_service = "osm", map_type = "streets")
-          #cluster_data + 
-          #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
-          #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") 
+        #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+        
+        #plot(cluster_data)
+        #plot(basemap)
+        
+        #bbox <- st_bbox(circle_geom)
+        #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
+        
+        #world_cropped <- st_crop(na.omit(wdf), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+        #world_inter <- st_intersection(world, cluster_data_sf)
+        
+        #basemap_magick(bbox, map_service = "osm", map_type = "streets")
+        #cluster_data + 
+        #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
+        #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") 
       }
     }
   })
