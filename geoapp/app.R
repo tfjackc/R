@@ -224,7 +224,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot")
+        plotOutput("dbscan_plot", height="600px")
       })
       
       # Render plot
@@ -245,6 +245,8 @@ server <- function(input, output, session) {
           ) +
           coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
       })
+      
+      outputOptions(output, "dbscan_plot", suspendWhenHidden = FALSE)
     }
     
     eqsf <- filteredEqsf()$eqsf
