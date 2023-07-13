@@ -18,7 +18,7 @@ library(mapboxapi)
 library(RColorBrewer)
 library(basemaps)
 library(ggmap)
-
+library(plotly)
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -250,7 +250,6 @@ server <- function(input, output, session) {
               data = world, map = world,
               aes(long, lat, map_id = region),
               color = "black", fill = NA
-              
             ) +
             coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
         })
