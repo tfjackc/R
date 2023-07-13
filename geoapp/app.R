@@ -74,6 +74,7 @@ server <- function(input, output, session) {
   
   output$eqMap <- renderLeaflet({
     leaflet() %>%
+      addTiles(group = "OSM") %>%
       addProviderTiles(providers$CartoDB.DarkMatter, group = "DarkMatter", options = tileOptions(noWrap = FALSE)) %>% # add CARTO tiles
       addTiles(
         urlTemplate = "http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw",
@@ -83,14 +84,13 @@ server <- function(input, output, session) {
         ),
         group = "Satellite"
       ) %>%
-      addTiles(group = "OSM") %>%
       # addMapboxTiles(style_id = "satellite",
       #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
       #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
       #             username = "tfjackc",
       #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
-      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("DarkMatter", "Satellite", "OSM")) %>%
+      addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("OSM", "DarkMatter", "Satellite"git )) %>%
       addDrawToolbar( polylineOptions = FALSE,
                       polygonOptions = FALSE,
                       rectangleOptions = FALSE,
