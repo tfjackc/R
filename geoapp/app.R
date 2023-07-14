@@ -19,6 +19,7 @@ library(RColorBrewer)
 library(basemaps)
 library(ggmap)
 library(plotly)
+library(shinyjs)
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -43,10 +44,11 @@ ui <- htmlTemplate("template.html",
                                                                                selected = "1 Month"),
                                                   sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
                                                   selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
-                                         tabPanel("DBSCAN Parameters", numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                  numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1),
+                                         tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                                                  numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
                                          )),
                    renderdbscan = uiOutput("dbovermap"),
+                   toggleplot = uiOutput("toggle"),
                    timeTable = dataTableOutput("timeTable"),
                    #dbplot = plotOutput("dbscan_plot"),
                    #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
@@ -224,7 +226,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="auto")
+        plotOutput("dbscan_plot", height="800")
       })
       
       bbox <- st_bbox(circle_geom)
@@ -249,6 +251,10 @@ server <- function(input, output, session) {
       })
       
       outputOptions(output, "dbscan_plot", suspendWhenHidden = FALSE)
+      
+      output$toggle <- renderUI({
+        checkboxInput("toggle_plot", h4("DBSCAN Plot"), TRUE)
+      })
     }
     
     eqsf <- filteredEqsf()$eqsf

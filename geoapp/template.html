@@ -21,38 +21,36 @@ function toggleContent() {
   }
 }
 
-// function dbscanWindow() {
-//   var db = document.querySelector(".card .card-body");
-//   if (db.style.display !== 'block') {
-//     db.style.display = "block";
-//   } else {
-//     db.style.display = "none";
-//   }
-// }
-
-
+function dbscanWindow() {
+  console.log("clicking shit");
+  const plotwindow = document.getElementById("dbscan_plot");
+  if (plotwindow.style.display !== 'none') {
+    plotwindow.style.display = 'none';
+  }
+  else {
+    plotwindow.style.display = 'block';
+  }
+}
 </script>
 {{ map }}
 {{ renderdbscan }} 
+
 <div class="container">
   <div class="content">
     {{ filters }}
   </div>
 </div>
 
-
-  
-
-
 <button id="filter" onclick="toggleContent()">
   <h4><i class="bi bi-sliders align-middle"></i></h4>
   <span class="ms-1 d-none d-sm-inline"><h5>Filters</h5></span>
 </button>
 
-<!--<button id="plotButton" onclick="dbscanWindow()">-->
+<div id="check_box" onclick="dbscanWindow()">
+  {{ toggleplot }}
 <!--  <h4><i class="bi bi-upc-scan align-middle"></i></h4>-->
 <!--  <span class="ms-1 d-none d-sm-inline"><h5>DBSCAN</h5></span>-->
-<!--</button>-->
+</div>
 
 <div class="accordion" style="bottom: 0;">
   <div class="accordion-item">
