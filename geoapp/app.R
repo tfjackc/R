@@ -224,7 +224,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="600px")
+        plotOutput("dbscan_plot", height="auto")
       })
       
       # Render plot
