@@ -5,22 +5,49 @@ body {
   padding: 0;
 }
 
+.navbar {
+  margin-bottom: 0px !important;
+  justify-content: left;
+  margin-left: 0 !important;
+}
+
+.navbar-brand {
+  font-family: Consolas;
+  font-size: large;
+  display: flex;
+  align-items: center;
+  margin-left: 0 !important;
+}
+
+/*
+a {
+  display: none !important;
+}
+*/
+
 #eqMap {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%;
-  height: 100%;
+  position: fixed;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  top: 60px;
+}
+
+.container-fluid {
+  padding: 0;
+  margin: 0;
+  justify-content: left !important;
+  
 }
 
 .container {
   position: fixed;
-  top: 0;
+  top: 60px;
   left: 160px;
   display: flex;
   width: 320px;
   margin-top: 12px;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   background-color: rgba(211, 211, 211, 0.9);
   border-radius: 5px;
@@ -61,7 +88,7 @@ body {
 
 #filter {
   position: fixed;
-  top: 0;
+  top: 60px;
   left: 50px;
   height: 40px;
   width: 80px;
@@ -77,7 +104,7 @@ body {
 
 #check_box {
   position: fixed;
-  top: 335px;
+  top: 395px;
   left: 0;
   margin-top: 12px;
   margin-left: 10px;

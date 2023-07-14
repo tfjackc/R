@@ -32,8 +32,9 @@ world <- map_data("world")
 #wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4326)
 #print(st_crs(wdf))
 
-ui <- htmlTemplate("template.html",
-                   map = leafletOutput("eqMap", height="100%"),
+ui <- navbarPage("USGS Earthquakes", tabPanel("panel 1", htmlTemplate("template.html",
+                   nav =  navlistPanel("USGS Earthquakes"),
+                   map = leafletOutput("eqMap", width = "auto", height = "auto"),
                    #dbplot =  tabsetPanel(type = "tabs",
                    #                       tabPanel("DataTable", dataTableOutput("timeTable")),
                                          #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
@@ -68,7 +69,7 @@ ui <- htmlTemplate("template.html",
                    #minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
                    
                    
-)
+)))
 
 
 
