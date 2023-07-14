@@ -33,21 +33,21 @@ world <- map_data("world")
 
 ui <- htmlTemplate("template.html",
                    map = leafletOutput("eqMap", height="100%"),
-                   dbplot =  tabsetPanel(type = "tabs",
-                                         tabPanel("DataTable", dataTableOutput("timeTable")),
+                   #dbplot =  tabsetPanel(type = "tabs",
+                   #                       tabPanel("DataTable", dataTableOutput("timeTable")),
                                          #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
-                   ),
+                   #),
                    filters = tabsetPanel(type = "tabs",
                                          tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
                                                                                choices = c("1 Month", "1 Week", "1 Day"),
                                                                                selected = "1 Month"),
-                                                                   sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
-                                                                   selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
+                                                  sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
+                                                  selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
                                          tabPanel("DBSCAN Parameters", numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                                       numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1),
-                                                                       )),
-                   renderdbscan = uiOutput("dbovermap")
-                   #timeTable = dataTableOutput("timeTable"),
+                                                  numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1),
+                                         )),
+                   renderdbscan = uiOutput("dbovermap"),
+                   timeTable = dataTableOutput("timeTable"),
                    #dbplot = plotOutput("dbscan_plot"),
                    #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
@@ -58,8 +58,8 @@ ui <- htmlTemplate("template.html",
                    #                   ),
                    #                  selected = "all"),
                    #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                            #choices = c("1 Month", "1 Week", "1 Day"),
-                                            #selected = "1 Month"),
+                   #choices = c("1 Month", "1 Week", "1 Day"),
+                   #selected = "1 Month"),
                    #color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
                    #checkbox = checkboxInput("legend", "Show legend", TRUE)
                    #eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
@@ -227,13 +227,14 @@ server <- function(input, output, session) {
         plotOutput("dbscan_plot", height="auto")
       })
       
+      bbox <- st_bbox(circle_geom)
+      ymin <- as.numeric(bbox['ymin'])
+      ymax <- as.numeric(bbox['ymax'])
+      xmax <- as.numeric(bbox['xmax'])
+      xmin <- as.numeric(bbox['xmin'])
+      
       # Render plot
       output$dbscan_plot <- renderPlot({
-        bbox <- st_bbox(circle_geom)
-        ymin <- as.numeric(bbox['ymin'])
-        ymax <- as.numeric(bbox['ymax'])
-        xmax <- as.numeric(bbox['xmax'])
-        xmin <- as.numeric(bbox['xmin'])
         
         cluster_data_plot <- cluster_data()
         
@@ -277,7 +278,7 @@ server <- function(input, output, session) {
         print("-------new_geom------")
         print(st_crs(new_geom))
         
-    
+        
         circle_geom <- st_buffer(new_geom, radius)
         
         circle_pts <- st_intersection(eqsf, circle_geom)
