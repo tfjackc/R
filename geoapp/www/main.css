@@ -46,7 +46,6 @@ body {
   border-radius: 5px;
   z-index: 9999; /* Ensure the container is above other elements */
   display: flex;
-  opacity: 0.5;
 }
 
 
@@ -121,7 +120,6 @@ body {
 
 img {
   border-radius: 5px;
-  opacity: 1; !important
 }
 
 #DataTables_Table_0_wrapper {
