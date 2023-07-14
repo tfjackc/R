@@ -244,6 +244,7 @@ server <- function(input, output, session) {
             color = "black", fill = NA
           ) +
           coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax))
+        
       })
       
       outputOptions(output, "dbscan_plot", suspendWhenHidden = FALSE)
