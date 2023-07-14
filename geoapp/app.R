@@ -219,7 +219,7 @@ server <- function(input, output, session) {
       })
       
       cluster_data <- reactive({
-        factoextra::fviz_cluster(db_result(), locs, stand = FALSE, ellipse = TRUE, geom = "point")
+        factoextra::fviz_cluster(db_result(), locs, stand = FALSE, ellipse = TRUE, ggtheme = theme_minimal(), geom = "point")
       })
       
       # Render dynamic UI
