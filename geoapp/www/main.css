@@ -19,11 +19,11 @@ body {
   margin-left: 0 !important;
 }
 
-/*
-a {
+
+.nav.navbar-nav {
   display: none !important;
 }
-*/
+
 
 #eqMap {
   position: fixed;
