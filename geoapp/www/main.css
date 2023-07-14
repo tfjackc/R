@@ -9,6 +9,8 @@ body {
   margin-bottom: 0px !important;
   justify-content: left;
   margin-left: 0 !important;
+  background-color: #343a40;
+  color: #ffffff;
 }
 
 .navbar-brand {
@@ -17,6 +19,7 @@ body {
   display: flex;
   align-items: center;
   margin-left: 0 !important;
+  color: #ffffff !important;
 }
 
 
@@ -139,8 +142,8 @@ body {
 }
 
 .accordion-button {
-  background-color: #fff;
-  color: #000;
+  background-color: #343a40;
+  color: #ffffff;
   border: none;
   border-radius: 5px;
   padding: 10px;
