@@ -34,7 +34,7 @@ world <- map_data("world")
 
 ui <- navbarPage("USGS Earthquakes - Real Time Data", tabPanel("panel 1", htmlTemplate("template.html",
                    nav =  navlistPanel("USGS Earthquakes"),
-                   map = leafletOutput("eqMap", width = "auto", height = "auto"),
+                   map = leafletOutput("eqMap", height = "auto"),
                    #dbplot =  tabsetPanel(type = "tabs",
                    #                       tabPanel("DataTable", dataTableOutput("timeTable")),
                                          #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
@@ -50,7 +50,7 @@ ui <- navbarPage("USGS Earthquakes - Real Time Data", tabPanel("panel 1", htmlTe
                                          )),
                    renderdbscan = uiOutput("dbovermap"),
                    toggleplot = uiOutput("toggle"),
-                   timeTable = dataTableOutput("timeTable"),
+                   timeTable = dataTableOutput("timeTable")
                    #dbplot = plotOutput("dbscan_plot"),
                    #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
                    #dropdown = selectInput("dropdown",
