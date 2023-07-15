@@ -107,10 +107,10 @@ body {
 
 #check_box {
   position: fixed;
-  right: 0;
-  top: 100px;
+  left: 0;
+  top: 395px;
   margin-top: 12px;
-  margin-left: 10px;
+  margin-left: 2px;
   border-radius: 5px;
   padding: 5px;
   z-index: 10000;
