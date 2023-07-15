@@ -12,6 +12,13 @@
 <body>
 
 <script type="text/JavaScript">
+
+ $(document).ready(function(){
+         $(window).on('load', function() {
+        alert("Welcome! Begin by using the Draw Tool in the top left to select earthquakes to visualize the Density Based Clustering")
+    });
+ });
+
 function toggleContent() {
   const content = document.querySelector('.container .content');
   if (content.style.display !== 'block') {
@@ -20,9 +27,7 @@ function toggleContent() {
     content.style.display = 'none';
   }
 }
-
 function dbscanWindow() {
-  console.log("clicking shit");
   const plotwindow = document.getElementById("dbscan_plot");
   if (plotwindow.style.display !== 'none') {
     plotwindow.style.display = 'none';
@@ -67,5 +72,8 @@ function dbscanWindow() {
     </div>
   </div>
 </div>
+
+
+
 </body>
 </html>
