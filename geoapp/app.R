@@ -228,7 +228,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="480")
+        jqui_draggable(jqui_resizable(plotOutput("dbscan_plot", height="480px", width="480px")))
       })
       
       bbox <- st_bbox(circle_geom)

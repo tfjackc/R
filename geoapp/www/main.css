@@ -68,8 +68,7 @@ body {
   position: fixed;
   right: 12px;
   bottom: 80px;
-  width: 480px;
-  display: block;
+  display: none;
   margin: 0;
   padding: 0;
   justify-content: center;
