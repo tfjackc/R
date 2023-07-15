@@ -228,7 +228,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="800")
+        plotOutput("dbscan_plot", height="auto")
       })
       
       bbox <- st_bbox(circle_geom)
