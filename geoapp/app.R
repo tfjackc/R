@@ -19,7 +19,7 @@ library(RColorBrewer)
 library(basemaps)
 library(ggmap)
 library(plotly)
-library(shinyjs)
+library(shinyjqui)
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -34,7 +34,7 @@ world <- map_data("world")
 
 ui <- navbarPage("USGS Earthquakes - Real Time Data", tabPanel("panel 1", htmlTemplate("template.html",
                    nav =  navlistPanel("USGS Earthquakes"),
-                   map = leafletOutput("eqMap", height = "auto"),
+                   map = leafletOutput("eqMap",  height = "auto"),
                    #dbplot =  tabsetPanel(type = "tabs",
                    #                       tabPanel("DataTable", dataTableOutput("timeTable")),
                                          #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
@@ -228,7 +228,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="auto")
+        plotOutput("dbscan_plot", height="480")
       })
       
       bbox <- st_bbox(circle_geom)
