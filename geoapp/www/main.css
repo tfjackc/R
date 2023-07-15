@@ -74,7 +74,7 @@ body {
   padding: 0;
   justify-content: center;
   align-items: center;
-  background-color: rgba(211, 211, 211, 0.9);
+  /*background-color: rgba(211, 211, 211, 0.9);*/
   border-radius: 5px;
   z-index: 1000; /* Ensure the container is above other elements */
   display: flex;
@@ -114,7 +114,7 @@ body {
   margin-left: 2px;
   border-radius: 5px;
   padding: 5px;
-  z-index: 10000;
+  z-index: 5000;
   background-color: "#e9e9ed";
 }
 
@@ -186,6 +186,24 @@ img {
   border-radius: 5px;
   filter: drop-shadow(0.35rem 0.35rem 0.4rem rgba(0, 0, 0, 0.5));
 }
+
+/*
+.jqui_wrapper {
+  right: 12px;
+  bottom: 80px;
+  width: 600px;
+  display: block;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(211, 211, 211, 0.9);
+  border-radius: 5px;
+  z-index: 1000; 
+  display: flex;
+  opacity:0.7;
+}
+*/
 
 #DataTables_Table_0_wrapper {
   max-height: 417px;
