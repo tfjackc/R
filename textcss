@@ -68,7 +68,7 @@ body {
   position: fixed;
   right: 12px;
   bottom: 80px;
-  width: 600px;
+  width: 800px;
   display: block;
   margin: 0;
   padding: 0;

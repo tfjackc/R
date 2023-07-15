@@ -19,7 +19,7 @@ library(RColorBrewer)
 library(basemaps)
 library(ggmap)
 library(plotly)
-library(shinyjqui)
+library(shinyjs)
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
@@ -33,42 +33,42 @@ world <- map_data("world")
 #print(st_crs(wdf))
 
 ui <- navbarPage("USGS Earthquakes - Real Time Data", tabPanel("panel 1", htmlTemplate("template.html",
-                                                                                       nav =  navlistPanel("USGS Earthquakes"),
-                                                                                       map = leafletOutput("eqMap", width = "auto", height = "auto"),
-                                                                                       #dbplot =  tabsetPanel(type = "tabs",
-                                                                                       #                       tabPanel("DataTable", dataTableOutput("timeTable")),
-                                                                                       #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
-                                                                                       #),
-                                                                                       filters = tabsetPanel(type = "tabs",
-                                                                                                             tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                                                                                                                                   choices = c("1 Month", "1 Week", "1 Day"),
-                                                                                                                                                   selected = "1 Month"),
-                                                                                                                      sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
-                                                                                                                      selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
-                                                                                                             tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                                                                                      numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
-                                                                                                             )),
-                                                                                       renderdbscan = uiOutput("dbovermap"),
-                                                                                       toggleplot = uiOutput("toggle"),
-                                                                                       timeTable = dataTableOutput("timeTable"),
-                                                                                       #dbplot = plotOutput("dbscan_plot"),
-                                                                                       #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
-                                                                                       #dropdown = selectInput("dropdown",
-                                                                                       #                       h4("Select the location source"),
-                                                                                       #                      choices = c(
-                                                                                       #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-                                                                                       #                      "pt", "se", "us", "uu", "uw"
-                                                                                       #                   ),
-                                                                                       #                  selected = "all"),
-                                                                                       #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                                                                       #choices = c("1 Month", "1 Week", "1 Day"),
-                                                                                       #selected = "1 Month"),
-                                                                                       #color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
-                                                                                       #checkbox = checkboxInput("legend", "Show legend", TRUE)
-                                                                                       #eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                                                       #minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
-                                                                                       
-                                                                                       
+                   nav =  navlistPanel("USGS Earthquakes"),
+                   map = leafletOutput("eqMap", width = "auto", height = "auto"),
+                   #dbplot =  tabsetPanel(type = "tabs",
+                   #                       tabPanel("DataTable", dataTableOutput("timeTable")),
+                                         #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
+                   #),
+                   filters = tabsetPanel(type = "tabs",
+                                         tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                                                                               choices = c("1 Month", "1 Week", "1 Day"),
+                                                                               selected = "1 Month"),
+                                                  sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
+                                                  selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
+                                         tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                                                  numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
+                                         )),
+                   renderdbscan = uiOutput("dbovermap"),
+                   toggleplot = uiOutput("toggle"),
+                   timeTable = dataTableOutput("timeTable"),
+                   #dbplot = plotOutput("dbscan_plot"),
+                   #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
+                   #dropdown = selectInput("dropdown",
+                   #                       h4("Select the location source"),
+                   #                      choices = c(
+                   #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
+                   #                      "pt", "se", "us", "uu", "uw"
+                   #                   ),
+                   #                  selected = "all"),
+                   #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                   #choices = c("1 Month", "1 Week", "1 Day"),
+                   #selected = "1 Month"),
+                   #color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
+                   #checkbox = checkboxInput("legend", "Show legend", TRUE)
+                   #eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                   #minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
+                   
+                   
 ))
 )
 
@@ -228,7 +228,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        plotOutput("dbscan_plot", height="480")
+        plotOutput("dbscan_plot", height="800")
       })
       
       bbox <- st_bbox(circle_geom)
