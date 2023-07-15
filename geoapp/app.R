@@ -32,49 +32,24 @@ world <- map_data("world")
 #wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4326)
 #print(st_crs(wdf))
 
-ui <- navbarPage("USGS Earthquakes - Real Time Data", tabPanel("panel 1", htmlTemplate("template.html",
-                                                                                       nav =  navlistPanel("USGS Earthquakes"),
-                                                                                       map = leafletOutput("eqMap", width = "auto", height = "auto"),
-                                                                                       #dbplot =  tabsetPanel(type = "tabs",
-                                                                                       #                       tabPanel("DataTable", dataTableOutput("timeTable")),
-                                                                                       #tabPanel("DBSCAN Plot", plotOutput("dbscan_plot"))),
-                                                                                       #),
-                                                                                       filters = tabsetPanel(type = "tabs",
-                                                                                                             tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                                                                                                                                   choices = c("1 Month", "1 Week", "1 Day"),
-                                                                                                                                                   selected = "1 Month"),
-                                                                                                                      sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
-                                                                                                                      selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
-                                                                                                             tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                                                                                      numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
-                                                                                                             )),
-                                                                                       renderdbscan = uiOutput("dbovermap"),
-                                                                                       toggleplot = uiOutput("toggle"),
-                                                                                       timeTable = dataTableOutput("timeTable"),
-                                                                                       #dbplot = plotOutput("dbscan_plot"),
-                                                                                       #slider = sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 8)),
-                                                                                       #dropdown = selectInput("dropdown",
-                                                                                       #                       h4("Select the location source"),
-                                                                                       #                      choices = c(
-                                                                                       #                       "all", "ak", "ci", "hv", "ld", "mb", "nc", "nm", "nn", "pr",
-                                                                                       #                      "pt", "se", "us", "uu", "uw"
-                                                                                       #                   ),
-                                                                                       #                  selected = "all"),
-                                                                                       #dataSelect = selectInput("dataSelect", h4("Select GeoJSON Feed"),
-                                                                                       #choices = c("1 Month", "1 Week", "1 Day"),
-                                                                                       #selected = "1 Month"),
-                                                                                       #color_choice = selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu"),
-                                                                                       #checkbox = checkboxInput("legend", "Show legend", TRUE)
-                                                                                       #eps_input = numericInput("eps_input", h5("eps"), 0.45, min = 0.1, max = .99, step = .01),
-                                                                                       #minpts = numericInput("minpts_input", h5("minPts"), 5, min = 1, max = 100, step = 1)
-                                                                                       
-                                                                                       
+ui <- navbarPage("USGS Earthquakes - Real Time Data", 
+      tabPanel("panel 1", htmlTemplate("template.html",
+      nav =  navlistPanel("USGS Earthquakes"),
+      map = leafletOutput("eqMap", width = "auto", height = "auto"),
+      filters = tabsetPanel(type = "tabs",
+                           tabPanel("Data Filters",  selectInput("dataSelect", h4("Select GeoJSON Feed"),
+                                                                 choices = c("1 Month", "1 Week", "1 Day"),
+                                                       selected = "1 Month"),
+                           sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
+                           selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
+                           tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                            numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
+                           )),
+      renderdbscan = uiOutput("dbovermap"),
+      toggleplot = uiOutput("toggle"),
+      timeTable = dataTableOutput("timeTable"),
 ))
 )
-
-
-
-
 
 server <- function(input, output, session) {
   
@@ -90,11 +65,6 @@ server <- function(input, output, session) {
         ),
         group = "Satellite"
       ) %>%
-      # addMapboxTiles(style_id = "satellite",
-      #               style_url = 'http://{s}.tiles.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGhhd3VsZHAwbHV1M3RudGt0bWFhNHl0In0.5qDpeYjN5r-rBh-SYA9Qgw',
-      #              access_token = "pk.eyJ1IjoidGZqYWNrYyIsImEiOiJjbGpxcW9hNWwwODVrM2ZtaXUwOWhzMjNjIn0.-Oqp3xopqBxOXvHhqC3qFw",
-      #             username = "tfjackc",
-      #            group = "Satellite") %>%
       setView(-18.525960, 26.846869, 3) %>%
       addLayersControl(overlayGroups = c("vectorData"), baseGroups = c("OSM", "DarkMatter", "Satellite")) %>%
       addDrawToolbar( polylineOptions = FALSE,
@@ -103,7 +73,6 @@ server <- function(input, output, session) {
                       circleOptions = TRUE,
                       markerOptions = FALSE,
                       circleMarkerOptions = FALSE,
-                      # markerOptions = drawMarkerOptions(markerIcon = myMarkerIcon(2)),
                       singleFeature = TRUE,
                       editOptions = editToolbarOptions())
   })
@@ -178,37 +147,6 @@ server <- function(input, output, session) {
     ))
   })
   
-  # Start of Drawing
-  observeEvent(input$eqMap_draw_start, {
-    print("Start of drawing")
-    print(input$leafmap_draw_start)
-  })
-  
-  # Stop of Drawing
-  observeEvent(input$eqMap_draw_stop, {
-    print("Stopped drawing")
-    print(input$leafmap_draw_stop)
-  })
-  
-  # New Feature
-  observeEvent(input$eqMap_draw_new_feature, {
-    print("New Feature")
-    print(input$eqMap_draw_new_feature)
-  })
-  
-  # Edited Features
-  observeEvent(input$eqMap_draw_edited_features, {
-    print("Edited Features")
-    print(input$eqMap_draw_edited_features)
-  })
-  
-  # Deleted features
-  observeEvent(input$eqMap_draw_deleted_features, {
-    print("Deleted Features")
-    print(input$eqMap_draw_deleted_features)
-  })
-  
-  # We also listen for draw_all_features which is called anytime
   # features are created/edited/deleted from the map
   observeEvent(input$eqMap_draw_all_features, {
     
@@ -260,10 +198,7 @@ server <- function(input, output, session) {
     }
     
     eqsf <- filteredEqsf()$eqsf
-    
-    print("All Features")
-    print(input$eqMap_draw_all_features)
-    
+
     if (!is.null(input$eqMap_draw_all_features) && length(input$eqMap_draw_all_features$features) > 0) {
       
       
@@ -281,12 +216,6 @@ server <- function(input, output, session) {
         new_geom <- data.frame(lon = as.numeric(lng), lat = as.numeric(lat))
         new_geom <- st_as_sf(new_geom, coords = c("lon", "lat"), crs = 4326) #4979 change before deployment to 4326
         
-        print("-------eqsf----------")
-        print(st_crs(eqsf))
-        print("-------new_geom------")
-        print(st_crs(new_geom))
-        
-        
         circle_geom <- st_buffer(new_geom, radius)
         
         circle_pts <- st_intersection(eqsf, circle_geom)
@@ -295,26 +224,6 @@ server <- function(input, output, session) {
         locs <- dplyr::select(df_coords,X,Y) 
         
         runDBSCAN(circle_geom=circle_geom, locs=locs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
-        
-        #observeEvent(input$rerunDB,{
-        #  runDBSCAN(circle_geom=circle_geom, db=db)
-        #})
-        
-        #basemap <- basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
-        
-        #plot(cluster_data)
-        #plot(basemap)
-        
-        #bbox <- st_bbox(circle_geom)
-        #world_sf <- st_as_sf(world_coordinates, coords = c("long", "lat"))
-        
-        #world_cropped <- st_crop(na.omit(wdf), xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
-        #world_inter <- st_intersection(world, cluster_data_sf)
-        
-        #basemap_magick(bbox, map_service = "osm", map_type = "streets")
-        #cluster_data + 
-        #  basemap_ggplot(bbox, map_service = "osm", map_type = "streets")
-        #basemap_ggplot(bbox, map_service = "osm", map_type = "streets") 
       }
     }
   })
