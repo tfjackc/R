@@ -10,27 +10,20 @@ library(rgdal)
 library(lubridate)
 library(shiny.telemetry)
 library(leaflet.extras)
-library(geojsonsf)
-library(geojsonio)
 library(dbscan)
 library(factoextra)
 library(mapboxapi)
 library(RColorBrewer)
 library(basemaps)
-library(ggmap)
 library(plotly)
 library(shinyjqui)
 
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
 url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
-#color_list <- c("Reds", "Spectral", "Pastel1", "PuRd", "PuBuGn")
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
 world <- map_data("world")
-#WorldData <- map_data('world')
-#wdf <- st_as_sf(WorldData, coords = c("long", "lat"), crs = 4326)
-#print(st_crs(wdf))
 
 ui <- navbarPage("USGS Earthquakes - Real Time Data", 
       tabPanel("panel 1", htmlTemplate("template.html",
@@ -166,7 +159,7 @@ server <- function(input, output, session) {
       
       # Render dynamic UI
       output$dbovermap <- renderUI({
-        jqui_draggable(jqui_resizable(plotOutput("dbscan_plot", height="480")))
+        jqui_draggable(jqui_resizable(plotOutput("dbscan_plot", height="480"), options = list(aspectRatio = TRUE)))
       })
       
       bbox <- st_bbox(circle_geom)
