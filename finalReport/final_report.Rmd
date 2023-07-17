@@ -76,7 +76,9 @@ select_all(eqsf)
 
 |       The shiny server function and the reactive programming capabilities of the shiny library allow us to make data requests based on user input, which is then processed into the desired format. When the browser loads, earthquakes in the last 30 days is the default web service that will appear on the map. The initial load and user selection are put through the same steps in terms of data processing. The variable 'dataInput()' is storing the reactive function that will trigger the data processing when selected. 'filteredEqsf' is listening for changes to be made and will readily update when required. Once the data is extracted from the USGS web service utilizing the rgdal library, the data is processed using simple features (sf), lubridate, tidyverse, and DataTable (DT) libraries. The sf library processes the Spatial Points DataFrame (the result of the readOGR() function) into a Simple Features DataFrame. In the sf object format the data is split into two variables 'eqsf' (used in the leaflet map) and 'eqsf_table (used in the DataTable). The timestamp variable is parsed into a human readable format for the table, and the 'eqsf' ready for visualization in the leaflet map based on the magnitude sliders, and symbology choices.
 
-![]("C:Users/jcolpitt/R/finalReport/service_filter.png")
+<br/>
+
+![](C:/Users/jcolpitt/R/finalReport/service_filter.png)
 
 ```{r}
 # USGS GeoJSON earthquake web services based on 1 month, 1 week, and 1 day
