@@ -21,6 +21,7 @@ library(shinyjqui)
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
 url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
 world <- map_data("world")
@@ -70,6 +71,7 @@ server <- function(input, output, session) {
                       editOptions = editToolbarOptions())
   })
   
+  # create reactive data input - allows end user to select the web service of their choice
   dataInput <- reactive({
     if (input$dataSelect != "1 Month" & input$dataSelect != "1 Week") {
       url_day
