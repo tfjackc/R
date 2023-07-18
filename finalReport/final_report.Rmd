@@ -9,7 +9,7 @@ output: html_notebook
 
 |       Earthquakes play a pivotal role along the active tectonic boundaries of the planet. The availability of real-time data feeds is bringing a new instantaneous approach to analysis. This study suggests the creation of an R Shiny application that takes data about earthquake locations in GeoJSON format and a series of user inputs to perform spatial clustering analysis via DBSCAN. The data has a 1-minute temporal resolution and is refreshed each time the application loads. R programming packages visible in **Figure 1** will be integrated into the application to provide representation and analysis of current spatiotemporal data.There are currently a variety of web GIS (Geographical Information Systems) applications available to the public that provide point and click information and filtering to understand where and when earthquakes are happening in real time. However, R Shiny applications leveraging open web mapping that are dedicated to visualizing spatial cluster analysis of real-time geospatial data are none existant and this application aims to fill that gap. The interactive component of the Shiny application enables speedy consumption of current seismic events, as well as easy comparison of properties, and determining spatial clustering. Future research should focus on testing the effectiveness of DBSCAN for the spatial clustering of earthquake data in this type of application and on identifying new functionalities for the app users. In short, the R Shiny application will use the R programming language's capabilities and the collaborative nature of web services to instantly assess, visualize, and identify spatial clusters of current seismic events throughout the world.
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 library(tidyverse) # series of packages for Data Science workflows
 library(maps) # import world data
 library(leaflet) # open web mapping
@@ -51,7 +51,9 @@ library(shinyjqui) # make tables and html elements draggable and resizeable
 
 |       This study is incorporating three web services of real-time GeoJSON earthquake data based on last 30 days, 7 days, and 1 day. All three services are available as a user input choice in the application (30 day filter is set as default). The data has a temporal resolution of 1 minute and is available here: <https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php>. The web services contain the data structure visible in Figure 2. Earthquakes with a magnitude equal to and greater than 2.5 have been selected due to the significant load of features below that value. Reducing the data to a magnitude equal to and greater than 2.5 reduces the table size from \~12,000 rows to \~2000 rows. The latitude and longitude will provide location information for the clustering analysis. The level of magnitude will determine the class breaks renderer which is a style that allows you to visualize numeric ranges of data (Class Breaks \| Documentation \| ArcGIS Developers, n.d.) based on symbology. As the range of magnitude visible to the end user is determined by the slider inputs in the applications filters. The class breaks will adapt to the selected scale.
 
-```{r}
+<br />
+
+```{r,warning=FALSE,message=FALSE,include=FALSE, echo=FALSE}
 url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
 
  earthquakes <- read_sf(url_month)
@@ -64,7 +66,7 @@ url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_mont
       select(mag, place, time_formatted)
 ```
 
-```{r}
+```{r,warning=FALSE,message=FALSE,echo=FALSE, results=FALSE}
 select_all(eqsf)
 ```
 
@@ -74,11 +76,15 @@ select_all(eqsf)
 
 #### **Methodology**
 
-|       The shiny server function and the reactive programming capabilities of the shiny library allow us to make data requests based on user input, which is then processed into the desired format. When the browser loads, earthquakes in the last 30 days is the default web service that will appear on the map. The initial load and user selection are put through the same steps in terms of data processing. The variable 'dataInput()' is storing the reactive function that will trigger the data processing when selected. 'filteredEqsf' is listening for changes to be made and will readily update when required. Once the data is extracted from the USGS web service utilizing the rgdal library, the data is processed using simple features (sf), lubridate, tidyverse, and DataTable (DT) libraries. The sf library processes the Spatial Points DataFrame (the result of the readOGR() function) into a Simple Features DataFrame. In the sf object format the data is split into two variables 'eqsf' (used in the leaflet map) and 'eqsf_table (used in the DataTable). The timestamp variable is parsed into a human readable format for the table, and the 'eqsf' ready for visualization in the leaflet map based on the magnitude sliders, and symbology choices.
+|       The shiny server function and the reactive programming capabilities of the shiny library allow us to make data requests based on user input, which is then processed into the desired format. When the browser loads, earthquakes in the last 30 days is the default web service that will appear on the map. 
 
 <br/>
 
-![](C:/Users/jcolpitt/R/finalReport/service_filter.png)
+
+![](C:/Users/jcolpitt/SpatialDataScience/Rprojects/R/finalReport/service_filter.png)
+**Figure**
+
+The initial load and user selection are put through the same steps in terms of data processing. The variable 'dataInput()' is storing the reactive function that will trigger the data processing when selected. 'filteredEqsf' is listening for changes to be made and will readily update when required. Once the data is extracted from the USGS web service utilizing the rgdal library, the data is processed using simple features (sf), lubridate, tidyverse, and DataTable (DT) libraries. The sf library processes the Spatial Points DataFrame (the result of the readOGR() function) into a Simple Features DataFrame. In the sf object format the data is split into two variables 'eqsf' (used in the leaflet map) and 'eqsf_table (used in the DataTable). The timestamp variable is parsed into a human readable format for the table, and the 'eqsf' ready for visualization in the leaflet map based on the magnitude sliders, and symbology choices.
 
 ```{r}
 # USGS GeoJSON earthquake web services based on 1 month, 1 week, and 1 day
