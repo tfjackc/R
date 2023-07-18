@@ -47,7 +47,9 @@ library(shinyjqui) # make tables and html elements draggable and resizeable
 ##### **Density-based spatial clustering of applications with noise (DBSCAN)**
 
 |       Conceptually, the idea behind density-based clustering is simple: given a set of data points, define a structure that accurately reflects the
-underlying density (Sander 2011). The model introduced by DBSCAN uses a simple minimum density level estimation, based on a threshold for the number of neighbors, minPts, within the radius ε (with an arbitrary distance measure) (Schubert et al., 2017). Objects with more than minPts neighbors within this radius (including the query point) are considered to be a core point. The intuition of DBSCAN is to find those areas, which satisfy this minimum density, and which are separated by areas of lower density (Schubert et al., 2017).
+underlying density (Sander 2011). Schubert et al. (2017) refers to DBSCAN as a simple minimum density level estimation, based on a threshold for the number of neighbors, minPts, within the radius ε (with an arbitrary distance measure). They also state objects with more than minPts neighbors within this radius (including the query point) are considered to be a core point. Lastly, they conclude that the intuition of DBSCAN is to find those areas, which satisfy this minimum density, and which are separated by areas of lower density. The application in this study uses input widgets to update the the threshold for number of neighbors and radius before or after the plot is rendered. Earthquakes the end user is interested in studying are selected by using the leaflet.extras draw tool available in the leaflet map. Once the points are intersected by the new geometry, the cluster plot will automatically render on the page. 
+
+##### insert image here of clustering?
 
 #### **Data**
 
