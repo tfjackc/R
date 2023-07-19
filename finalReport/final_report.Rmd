@@ -29,9 +29,13 @@ library(RColorBrewer) # symbology for circle markers in leaflet
 library(basemaps) # import basemaps
 library(plotly) # interactive plots
 library(shinyjqui) # make tables and html elements draggable and resizeable
+library(kableExtra)
+library(pander)
+library(tables)
 ```
 
 **Figure 1.** R Packages used in the USGS Earthquakes - Real Time Data application. The list of packages was compiled to assist in data extraction, manipulation, visualization, and web based functionality.
+
 <hr />
 
 #### **Introduction**
@@ -44,10 +48,13 @@ library(shinyjqui) # make tables and html elements draggable and resizeable
 
 |       Shiny is an R package and web framework that allows you to easily create rich, interactive web apps. Shiny allows you to take your work in R and expose it via a web browser so that anyone can use it (Hadley Wickham, 2021). In Shiny, you express your server logic using reactive programming.The key idea of reactive programming is to specify a graph of dependencies so that when an input changes, all related outputs are automatically updated (Hadley Wickham, 2021). The Shiny application's interactive components allow for quick consumption of current seismic events, comparing attributes, and analyzing spatial density based on clustering.
 
+<br />
+
 ##### **Density-based spatial clustering of applications with noise (DBSCAN)**
 
 |       Conceptually, the idea behind density-based clustering is simple: given a set of data points, define a structure that accurately reflects the
-underlying density (Sander 2011). Schubert et al. (2017) refers to DBSCAN as a simple minimum density level estimation, based on a threshold for the number of neighbors, minPts, within the radius ε (with an arbitrary distance measure). They also state objects with more than minPts neighbors within this radius (including the query point) are considered to be a core point. Lastly, they conclude that the intuition of DBSCAN is to find those areas, which satisfy this minimum density, and which are separated by areas of lower density. The application in this study uses input widgets to update the the threshold for number of neighbors and radius before or after the plot is rendered. Earthquakes the end user is interested in studying are selected by using the leaflet.extras draw tool available in the leaflet map. Once the points are intersected by the new geometry, the cluster plot will automatically render on the page. 
+
+underlying density (Sander 2011). Schubert et al. (2017) refers to DBSCAN as a simple minimum density level estimation, based on a threshold for the number of neighbors, minPts, within the radius ε (with an arbitrary distance measure). They also state objects with more than minPts neighbors within this radius (including the query point) are considered to be a core point. Lastly, they conclude that the intuition of DBSCAN is to find those areas, which satisfy this minimum density, and which are separated by areas of lower density. The application in this study uses input widgets to update the the threshold for number of neighbors and radius before or after the plot is rendered. Earthquakes the end user is interested in studying are selected by using the leaflet.extras draw tool available in the leaflet map. Once the points are intersected by the new geometry, the cluster plot will automatically render on the page.
 
 ##### insert image here of clustering?
 
@@ -70,8 +77,10 @@ url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_mont
       select(mag, place, time_formatted)
 ```
 
-```{r,warning=FALSE,message=FALSE,echo=FALSE, results=FALSE}
-select_all(eqsf)
+```{r,warning=FALSE,message=FALSE,echo=FALSE}
+#doc.type <- knitr::opts_knit$get('rmarkdown.pandoc.to')
+#if (doc.type == "docx") { pander(eqsf_table) } else { kable(eqsf_table) }
+select(eqsf_table)
 ```
 
 **Figure 2.** Data structure of the USGS Earthquake GeoJSON web service. The main variables of focus in the study are magnitude, place, time, and geometry. Earthquake observations in the last 30 days average \~1600.
@@ -80,13 +89,12 @@ select_all(eqsf)
 
 #### **Methodology**
 
-|       The shiny server function and the reactive programming capabilities of the shiny library allow us to make data requests based on user input, which is then processed into the desired format. When the browser loads, earthquakes in the last 30 days is the default web service that will appear on the map. 
+|       The shiny server function and the reactive programming capabilities of the shiny library allow us to make data requests based on user input, which is then processed into the desired format. When the browser loads, earthquakes in the last 30 days is the default web service that will appear on the map.
 
-<br />
-#!#[]#(C:/Users/jcolpitt/SpatialDataScience/Rprojects/R/finalReport/service_filter.png)
-<br />
+<br /> ![](C:/Users/jcolpitt/SpatialDataScience/Rprojects/R/finalReport/service_filter.png) <br />
 
-**Figure 3.** Snapshot of the Data Filters tab in the USGS Earthquakes - Real Time Data application. The dropdown list under "Select GeoJSON Feed" provides options for "1 Month", "1 Week", and "1 Day" web services that will populate the map when chosen. The slider input provides options for the filtering the level of earthquake magnitude displayed in the map. Symbology options are available from the RColorBrewer library as another dropdown selection for providing the best visibilty of point data above the basemap tiles.   
+**Figure 3.** Snapshot of the Data Filters tab in the USGS Earthquakes - Real Time Data application. The dropdown list under "Select GeoJSON Feed" provides options for "1 Month", "1 Week", and "1 Day" web services that will populate the map when chosen. The slider input provides options for the filtering the level of earthquake magnitude displayed in the map. Symbology options are available from the RColorBrewer library as another dropdown selection for providing the best visibilty of point data above the basemap tiles.\
+
 <hr />
 
 |       The initial load and user selection are put through the same steps in terms of data processing. The variable 'dataInput()' is storing the reactive function that will trigger the data processing when selected. 'filteredEqsf' is listening for changes to be made and will readily update when prompted. Once the data is extracted from the USGS web service utilizing the rgdal library, the data is processed using simple features (sf), lubridate, tidyverse, and DataTable (DT) libraries. The sf library processes the Spatial Points DataFrame (the result of the readOGR() function) into a Simple Features DataFrame. In the sf object format the data is split into two variables 'eqsf' (used in the leaflet map) and 'eqsf_table (used in the DataTable). The timestamp variable is parsed into a human readable format for the table, and the 'eqsf' ready for visualization in the leaflet map based on the magnitude sliders, and symbology choices.
@@ -138,13 +146,9 @@ dataInput <- reactive({
   })
 ```
 
-**Figure 4.** Three different time scale web services are imported from the USGS server and put into a chain of reactive variables that will trigger when a change is detected by 'input\$dataSelect' which refers to the "Select GeoJSON Feed" visible in Figure 3. The reactive programming of the Shiny library provides a flexible user interface with the ability to easily manipulate and filter available data. 
+**Figure 4.** Three different time scale web services are imported from the USGS server and put into a chain of reactive variables that will trigger when a change is detected by 'input\$dataSelect' which refers to the "Select GeoJSON Feed" visible in Figure 3. The reactive programming of the Shiny library provides a flexible user interface with the ability to easily manipulate and filter available data.
 
 <hr />
-
-
-
-
 
 #### **Resources**
 
@@ -156,11 +160,10 @@ Shiny - Welcome to Shiny. (n.d.). Shiny - Welcome to Shiny. <https://shiny.posit
 
 Class breaks \| Documentation \| ArcGIS Developers. (n.d.). Class Breaks \| Documentation \| ArcGIS Developers. <https://developers.arcgis.com/documentation/mapping-apis-and-services/visualization/data-driven-styles/class-breaks/>
 
-Hermawati, R., & Sitanggang, I. S. (2016). Web-Based Clustering Application Using Shiny Framework and DBSCAN Algorithm for Hotspots Data in Peatland in Sumatra. Procedia Environmental Sciences, 33, 317–323. https://doi.org/10.1016/j.proenv.2016.03.082 
+Hermawati, R., & Sitanggang, I. S. (2016). Web-Based Clustering Application Using Shiny Framework and DBSCAN Algorithm for Hotspots Data in Peatland in Sumatra. Procedia Environmental Sciences, 33, 317--323. <https://doi.org/10.1016/j.proenv.2016.03.082>
 
 (Hermawati & Sitanggang, 2016)
 
-Schubert, E., Sander, J., Ester, M., Kriegel, H. P., & Xu, X. (2017). DBSCAN Revisited, Revisited. ACM Transactions on Database Systems, 42(3), 1–21. https://doi.org/10.1145/3068335 
+Schubert, E., Sander, J., Ester, M., Kriegel, H. P., & Xu, X. (2017). DBSCAN Revisited, Revisited. ACM Transactions on Database Systems, 42(3), 1--21. <https://doi.org/10.1145/3068335>
 
-Sander J (2011). “Density-Based Clustering.” In Encyclopedia of Machine Learning, pp.
-270–273. Springer-Verlag.
+Sander J (2011). "Density-Based Clustering." In Encyclopedia of Machine Learning, pp. 270--273. Springer-Verlag.
