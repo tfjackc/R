@@ -18,9 +18,7 @@ library(basemaps)
 library(plotly)
 library(shinyjqui)
 
-url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
-url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
-url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
+
 
 color_list = rownames(subset(brewer.pal.info, category %in% c("seq", "div")))
 
@@ -36,7 +34,8 @@ ui <- navbarPage("USGS Earthquakes - Real Time Data",
                                                        selected = "1 Month"),
                            sliderInput("slider", h4("Select the magnitude"), 2, 9, value=c(2, 9)),  
                            selectInput("color_choice", h4("Symbology"), color_list, selected = "RdBu")),
-                           tabPanel("DBSCAN Parameters", numericInput("eps_input", h4("eps"), 0.45, min = 0.1, max = .99, step = .01),
+                           tabPanel("DBSCAN Parameters", numericInput("eps_input",
+                                    h4("eps"), 0.45, min = 0.1, max = 2, step = .01),
                             numericInput("minpts_input", h4("minPts"), 5, min = 1, max = 100, step = 1),
                            )),
       renderdbscan = uiOutput("dbovermap"),
@@ -46,6 +45,10 @@ ui <- navbarPage("USGS Earthquakes - Real Time Data",
 )
 
 server <- function(input, output, session) {
+  
+  url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_month.geojson"
+  url_week <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson"
+  url_day <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
   
   output$eqMap <- renderLeaflet({
     leaflet() %>%
@@ -84,8 +87,8 @@ server <- function(input, output, session) {
   
   filteredEqsf <- reactive({
     earthquakes <- read_sf(dataInput())
-    eqsf <- st_as_sf(earthquakes)
-    eqsf <- st_transform(eqsf, 4326)
+    #eqsf <- st_as_sf(earthquakes)
+    eqsf <- st_transform(earthquakes, 4326)
     eqsf$time <- as.POSIXct(as.numeric(eqsf$time)/1000, origin = "1970-01-01", tz = "America/Los_Angeles")
     eqsf$time_formatted <- format(eqsf$time, "%Y-%m-%d %I:%M:%S %p %Z")
     eqsf_table <- eqsf %>%
@@ -142,28 +145,32 @@ server <- function(input, output, session) {
     ))
   })
   
-  # features are created/edited/deleted from the map
+  # Listens for changes with the leaflet.extras draw tool
   observeEvent(input$eqMap_draw_all_features, {
     
+    # function for creating/updating the DBSCAN plot
     runDBSCAN <- function(circle_geom, db, xmin, xmax, ymin, ymax, locs) { 
       
+      # listen for updated inputs for eps and minpts value
       eps_input <- reactive(input$eps_input)
       minpts_input <- reactive(input$minpts_input)
       
-      # Calculate clustering result and cluster visualization
+      # calculate clustering result and cluster visualization
       db_result <- reactive({
         dbscan::dbscan(locs, eps = eps_input(), minPts = minpts_input())
       })
       
+      # use the factoextra library for rendering clusters
       cluster_data <- reactive({
         factoextra::fviz_cluster(db_result(), locs, stand = FALSE, ellipse = TRUE, ggtheme = theme_minimal(), geom = "point")
       })
       
-      # Render dynamic UI
+      # render dynamic UI
       output$dbovermap <- renderUI({
         jqui_draggable(jqui_resizable(plotOutput("dbscan_plot", height="480"), options = list(aspectRatio = TRUE)))
       })
       
+      # intersecting bounding box
       bbox <- st_bbox(circle_geom)
       ymin <- as.numeric(bbox['ymin'])
       ymax <- as.numeric(bbox['ymax'])
@@ -223,7 +230,7 @@ server <- function(input, output, session) {
     }
   })
   
+  
 }
-
 
 shinyApp(ui, server)
