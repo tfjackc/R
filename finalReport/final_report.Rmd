@@ -1,6 +1,8 @@
 ---
 title: "R Shiny web application for real-time seismic visualization – Jack Colpitt"
-output: html_notebook
+output:
+  word_document: default
+  html_notebook: default
 ---
 
 <br />
@@ -29,9 +31,6 @@ library(RColorBrewer) # symbology for circle markers in leaflet
 library(basemaps) # import basemaps
 library(plotly) # interactive plots
 library(shinyjqui) # make tables and html elements draggable and resizeable
-library(kableExtra)
-library(pander)
-library(tables)
 ```
 
 **Figure 1.** R Packages used in the USGS Earthquakes - Real Time Data application. The list of packages was compiled to assist in data extraction, manipulation, visualization, and web based functionality.
@@ -80,7 +79,8 @@ url_month <- "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_mont
 ```{r,warning=FALSE,message=FALSE,echo=FALSE}
 #doc.type <- knitr::opts_knit$get('rmarkdown.pandoc.to')
 #if (doc.type == "docx") { pander(eqsf_table) } else { kable(eqsf_table) }
-select(eqsf_table)
+library(knitr)
+kable(eqsf_table[1:5, ], caption="Selected Data")
 ```
 
 **Figure 2.** Data structure of the USGS Earthquake GeoJSON web service. The main variables of focus in the study are magnitude, place, time, and geometry. Earthquake observations in the last 30 days average \~1600.
